@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mpc_local_planner</name>
+  <version>0.0.0</version>
+  <description>The mpc_local_planner package implements a plugin
+    to the base_local_planner of the 2D navigation stack.
+    It provides a generic and versatile model predictive control implementation
+    with minimum-time and quadratic-form receding-horizon configurations.
+  </description>
+
+  <maintainer email="christoph.roesmann@tu-dortmund.de">Christoph Rösmann</maintainer>
+  <author email="christoph.roesmann@tu-dortmund.de">Christoph Rösmann</author>
+
+  <license>GPLv3</license>
+
+  <url type="website">http://wiki.ros.org/mpc_local_planner</url>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf2_eigen</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+
+  <build_export_depend>roscpp</build_export_depend>
+
+  <exec_depend>roscpp</exec_depend>
+
+  <depend>control_box_rst</depend>
+
+  <depend>base_local_planner</depend>
+  <depend>costmap_2d</depend>
+  <depend>costmap_converter</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>eigen</depend>
+  <depend>geometry_msgs</depend>
+  <depend>interactive_markers</depend>
+  <depend>nav_core</depend>
+  <depend>nav_msgs</depend>
+  <depend>mbf_costmap_core</depend>
+  <depend>mbf_msgs</depend>
+  <depend>mpc_local_planner_msgs</depend>
+  <depend>pluginlib</depend>
+  <depend>std_msgs</depend>
+  <depend>teb_local_planner</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
+
+
+  <export>
+    <nav_core plugin="${prefix}/mpc_local_planner_plugin.xml"/>
+    <mbf_costmap_core plugin="${prefix}/mpc_local_planner_plugin.xml"/>
+  </export>
+
+</package>

@@ -1,0 +1,32 @@
+# include our robot and obstacle definitions
+include "robots/diff_drive_robot_gps.inc"
+include "robots/obstacle.inc"
+
+## Simulation settings
+resolution 0.02
+interval_sim 100  # simulation timestep in milliseconds
+
+## Load a static map
+model
+(
+  # most maps will need a bounding box
+  name "emptyBox"
+  bitmap "../maps/empty_box.png"
+  size [ 6.0 6.0 2.0 ]
+  pose [ 0.0 0.0 0.0 0.0 ]
+  laser_return 1
+  color "gray30"
+)
+
+# throw in a robot
+myrobot
+(
+  pose [ -2.0 0.0 0.0 -90.0 ]
+  name "myRobot"
+)
+
+myobstacle
+(
+  pose [ 0.0 1.0 0.0 0.0 ]
+  name "obstacle"
+)

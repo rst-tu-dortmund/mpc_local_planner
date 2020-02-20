@@ -1,0 +1,25 @@
+<launch>
+	
+        <arg name="plot" default="false" />
+        <arg name="plot_states" default="false" />
+        <arg name="cpu_time" default="false" />
+
+  	<!--- Run optimization test node -->
+   	<node pkg="mpc_local_planner" type="test_mpc_optim_node" name="test_mpc_optim_node" output="screen">
+              <rosparam file="$(find mpc_local_planner)/cfg/test_mpc_optim_node.yaml" command="load" ns=""/>
+  
+              <param name="controller/print_cpu_time" value="true" if="$(arg cpu_time)"/>
+        </node>
+
+  	<!-- RVIZ -->
+  	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mpc_local_planner)/cfg/rviz_test_mpc_optim.rviz"/>
+
+        <!-- **************** Plot ocp results ************** -->
+        <node name="ocp_result_plotter" pkg="mpc_local_planner" type="plot_optimal_control_results.py" if="$(arg plot)">
+              <!-- param name="ocp_result_topic" value="/test_mpc_optim_node/ocp_result"/-->
+              <param name="plot_rate" value="2"/>
+              <param name="plot_states" value="$(arg plot_states)"/>
+        </node>
+
+</launch>
+

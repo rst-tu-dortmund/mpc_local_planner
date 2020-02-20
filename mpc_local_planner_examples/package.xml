@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mpc_local_planner_examples</name>
+  <version>0.0.0</version>
+  <description>The mpc_local_planner_examples package</description>
+
+  <maintainer email="christoph.roesmann@tu-dortmund.de">Christoph Rösmann</maintainer>
+  <author email="christoph.roesmann@tu-dortmund.de">Christoph Rösmann</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/mpc_local_planner_examples</url>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>stage_ros</exec_depend>
+  <exec_depend>mpc_local_planner</exec_depend>
+  <exec_depend>move_base</exec_depend>
+  <exec_depend>map_server</exec_depend>
+  <exec_depend>amcl</exec_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+  </export>
+
+</package>

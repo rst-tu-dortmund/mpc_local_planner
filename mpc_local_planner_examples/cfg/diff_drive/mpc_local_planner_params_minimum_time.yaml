@@ -1,0 +1,108 @@
+MpcLocalPlannerROS:
+
+  odom_topic: odom
+    
+   ## Robot settings
+  robot:
+    type: "unicycle"
+    unicycle:
+      max_vel_x: 0.4
+      max_vel_x_backwards: 0.2
+      max_vel_theta: 0.3
+      acc_lim_x: 0.2 # deactive bounds with zero
+      dec_lim_x: 0.2 # deactive bounds with zero
+      acc_lim_theta: 0.2 # deactivate bounds with zero
+
+  ## Footprint model for collision avoidance
+  footprint_model:
+    type: "point"
+    is_footprint_dynamic: False
+
+  ## Collision avoidance
+  collision_avoidance:
+    min_obstacle_dist: 0.2 # Note, this parameter must be chosen w.r.t. the footprint_model
+    enable_dynamic_obstacles: False
+    force_inclusion_factor: 1.5
+    cutoff_factor: 5  
+    include_costmap_obstacles: True
+    costmap_obstacles_behind_robot_dist: 1.5
+
+  ## Planning grid 
+  grid:
+    type: "fd_grid"
+    grid_size_ref: 20
+    dt_ref: 0.3
+    xf_fixed: [True, True, True]
+    warm_start: True
+    collocation_method: "forward_differences"
+    cost_integration_method: "left_sum"
+    variable_grid:
+      enable: True  
+      min_dt: 0.0;
+      max_dt: 10.0;
+      grid_adaptation:
+        enable: True
+        dt_hyst_ratio: 0.1
+        min_grid_size: 2
+        max_grid_size: 50
+
+  ## Planning options
+  planning:
+    objective:
+      type: "minimum_time" # minimum_time requires grid/variable_grid/enable=True and grid/xf_fixed set properly
+      quadratic_form:
+        state_weights: [2.0, 2.0, 2.0]
+        control_weights: [1.0, 1.0]
+        integral_form: False
+      minimum_time_via_points:
+        position_weight: 10.5
+        orientation_weight: 0.0
+        via_points_ordered: False
+    terminal_cost:
+      type: "quadratic" # can be "none"
+      quadratic:
+        final_state_weights: [2.0, 2.0, 2.0]
+    terminal_constraint:
+      type: "none" # can be "none"
+      l2_ball:
+        weight_matrix: [1.0, 1.0, 1.0]
+        radius: 5
+
+  ## Controller options
+  controller:
+    outer_ocp_iterations: 1
+    xy_goal_tolerance: 0.2
+    yaw_goal_tolerance: 0.1
+    global_plan_overwrite_orientation: true
+    global_plan_prune_distance: 1.0
+    allow_init_with_backward_motion: True
+    max_global_plan_lookahead_dist: 1.5 
+    global_plan_viapoint_sep: 0.5
+    force_reinit_new_goal_dist: 1.0
+    force_reinit_new_goal_angular: 1.57
+    force_reinit_num_steps: 0
+    prefer_x_feedback: False
+    publish_ocp_results: False
+    
+  ## Solver settings
+  solver:
+    type: "ipopt"
+    ipopt:
+      iterations: 100
+      max_cpu_time: -1.0
+      ipopt_numeric_options:
+        tol: 1e-4
+      ipopt_string_options:
+        linear_solver: "mumps" 
+        hessian_approximation: "exact" # exact or limited-memory
+    lsq_lm:
+      iterations: 10
+      weight_init_eq: 2
+      weight_init_ineq: 2
+      weight_init_bounds: 2
+      weight_adapt_factor_eq: 1.5
+      weight_adapt_factor_ineq: 1.5
+      weight_adapt_factor_bounds: 1.5
+      weight_adapt_max_eq: 500
+      weight_adapt_max_ineq: 500
+      weight_adapt_max_bounds: 500

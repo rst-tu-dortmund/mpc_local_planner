@@ -1,0 +1,70 @@
+<!-- 
+  Simulate a differential drive robot with the mpc_local_planner and costmap conversion enabled in stage:
+  - stage
+  - map_server
+  - move_base
+  - costmap_converter
+  - static map
+  - amcl
+  - rviz view
+ -->
+<launch>
+
+        <arg name="rviz" default="true" />
+        <arg name="plot" default="false" />
+        <arg name="plot_states" default="false" />
+
+        <!--  ************** Global Parameters ***************  -->
+        <param name="/use_sim_time" value="true"/>
+
+        <!--  ************** Stage Simulator ***************  -->
+	<node pkg="stage_ros" type="stageros" name="stageros" args="$(find mpc_local_planner_examples)/stage/maze_diff_drive.world">
+		<remap from="base_scan" to="scan"/>
+  	</node>
+
+        <!--  ************** Navigation ***************  -->
+	<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+  	  	<rosparam file="$(find mpc_local_planner_examples)/cfg/diff_drive/costmap_common_params.yaml" command="load" ns="global_costmap" />
+  	 	<rosparam file="$(find mpc_local_planner_examples)/cfg/diff_drive/costmap_common_params.yaml" command="load" ns="local_costmap" />
+  		<rosparam file="$(find mpc_local_planner_examples)/cfg/diff_drive/local_costmap_params.yaml" command="load" />
+  		<rosparam file="$(find mpc_local_planner_examples)/cfg/diff_drive/global_costmap_params.yaml" command="load" />
+  		<rosparam file="$(find mpc_local_planner_examples)/cfg/diff_drive/mpc_local_planner_params_minimum_time.yaml" command="load" />
+		<!-- Here we load our costmap conversion settings -->
+		<rosparam file="$(find mpc_local_planner_examples)/cfg/diff_drive/costmap_converter_params.yaml" command="load" /> 
+
+		<param name="base_global_planner" value="global_planner/GlobalPlanner" />
+		<param name="planner_frequency" value="1.0" />
+		<param name="planner_patience" value="5.0" />
+
+		<param name="base_local_planner" value="mpc_local_planner/MpcLocalPlannerROS" />
+		<param name="controller_frequency" value="5.0" />
+		<param name="controller_patience" value="15.0" />
+
+                <param name="MpcLocalPlannerROS/controller/publish_ocp_results" value="true" if="$(arg plot)" />
+	</node>
+
+
+	<!--  ****** Maps *****  -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(find mpc_local_planner_examples)/maps/maze.yaml" output="screen">
+                <param name="frame_id" value="map"/>
+	</node>
+
+	<node pkg="amcl" type="amcl" name="amcl" output="screen">
+		<rosparam file="$(find mpc_local_planner_examples)/cfg/amcl_params.yaml" command="load" />
+
+	        <param name="initial_pose_x"            value="2"/>
+		<param name="initial_pose_y"            value="2"/>
+		<param name="initial_pose_a"            value="0"/>
+	</node>
+
+	 <!--  **************** Visualization ****************  -->
+	 <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mpc_local_planner_examples)/cfg/rviz_navigation.rviz" if="$(arg rviz)"/>
+
+         <!-- **************** Plot ocp results ************** -->
+         <node name="ocp_result_plotter" pkg="mpc_local_planner" type="plot_optimal_control_results.py" output="screen" if="$(arg plot)">
+             <param name="ocp_result_topic" value="/move_base/MpcLocalPlannerROS/ocp_result"/>
+             <param name="plot_rate" value="5"/>
+              <param name="plot_states" value="$(arg plot_states)"/>
+         </node>
+
+</launch>

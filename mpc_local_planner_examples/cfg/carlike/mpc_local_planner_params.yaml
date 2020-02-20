@@ -1,0 +1,104 @@
+MpcLocalPlannerROS:
+
+  odom_topic: odom
+    
+   ## Robot settings
+  robot:
+    type: "simple_car"
+    simple_car:
+      wheelbase: 0.4
+      front_wheel_driving: False
+      max_vel_x: 0.4
+      max_vel_x_backwards: 0.2
+      max_steering_angle: 1.4
+      acc_lim_x: 0.5 # deactive bounds with zero
+      dec_lim_x: 0.5 # deactive bounds with zero
+      max_steering_rate: 0.5 # deactive bounds with zero
+
+  ## Footprint model for collision avoidance
+  footprint_model: # types: "point", "circular", "two_circles", "line", "polygon"
+    type: "line"
+    radius: 0.2 # for type "circular"
+    line_start: [0.0, 0.0] # for type "line"
+    line_end: [0.4, 0.0] # for type "line"
+    front_offset: 0.2 # for type "two_circles"
+    front_radius: 0.2 # for type "two_circles"
+    rear_offset: 0.2 # for type "two_circles"
+    rear_radius: 0.2 # for type "two_circles"
+    vertices: [ [0.25, -0.05], [0.18, -0.05], [0.18, -0.18], [-0.19, -0.18], [-0.25, 0], [-0.19, 0.18], [0.18, 0.18], [0.18, 0.05], [0.25, 0.05] ] # for type "polygon"
+    is_footprint_dynamic: False
+
+
+  ## Collision avoidance
+  collision_avoidance:
+    min_obstacle_dist: 0.25 # Note, this parameter must be chosen w.r.t. the footprint_model
+    enable_dynamic_obstacles: False
+    force_inclusion_factor: 1.5
+    cutoff_factor: 5  
+    include_costmap_obstacles: True
+    costmap_obstacles_behind_robot_dist: 1.0
+
+  ## Planning grid 
+  grid:
+    type: "fd_grid"
+    grid_size_ref: 20
+    dt_ref: 0.3
+    xf_fixed: [True, True, True]
+    warm_start: True
+    collocation_method: "forward_differences"
+    cost_integration_method: "left_sum"
+    variable_grid:
+      enable: True  
+      min_dt: 0.0;
+      max_dt: 10.0;
+      grid_adaptation:
+        enable: True
+        dt_hyst_ratio: 0.1
+        min_grid_size: 2
+        max_grid_size: 50
+
+  ## Planning options
+  planning:
+    objective:
+      type: "minimum_time" # minimum_time requires grid/variable_grid/enable=True and grid/xf_fixed set properly
+    terminal_cost:
+      type: "none"
+    terminal_constraint:
+      type: "none"
+
+  ## Controller options
+  controller:
+    outer_ocp_iterations: 1
+    xy_goal_tolerance: 0.2
+    yaw_goal_tolerance: 0.1
+    global_plan_overwrite_orientation: True
+    global_plan_prune_distance: 1.0
+    allow_init_with_backward_motion: True
+    max_global_plan_lookahead_dist: 1.5 
+    force_reinit_new_goal_dist: 1.0
+    force_reinit_new_goal_angular: 1.57
+    prefer_x_feedback: False
+    publish_ocp_results: False
+    
+  ## Solver settings
+  solver:
+    type: "ipopt"
+    ipopt:
+      iterations: 100
+      max_cpu_time: -1.0
+      ipopt_numeric_options:
+        tol: 1e-4
+      ipopt_string_options:
+        linear_solver: "mumps" 
+        hessian_approximation: "limited-memory" # exact/limited-memory, WARNING 'exact' does currently not work well with the carlike model
+    lsq_lm:
+      iterations: 10
+      weight_init_eq: 2
+      weight_init_ineq: 2
+      weight_init_bounds: 2
+      weight_adapt_factor_eq: 1.5
+      weight_adapt_factor_ineq: 1.5
+      weight_adapt_factor_bounds: 1.5
+      weight_adapt_max_eq: 500
+      weight_adapt_max_ineq: 500
+      weight_adapt_max_bounds: 500

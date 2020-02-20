@@ -1,0 +1,18 @@
+# Build files
+build
+
+# Autosave files
+*.autosave
+
+# MacOS temporary files
+.DS_Store
+
+# QT project files
+*.txt.user*
+
+# kDevelop project files
+.kdev4
+*.kdev4
+
+# Version control
+.svn
