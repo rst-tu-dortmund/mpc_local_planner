@@ -55,6 +55,8 @@ find_package(control_box_rst QUIET COMPONENTS
 # if (EXISTS "FindEigen3.cmake")
 find_package(Eigen3 REQUIRED)
 
+find_package(osqp QUIET)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(EXTERNAL_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
