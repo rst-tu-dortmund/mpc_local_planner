@@ -4,7 +4,7 @@ mpc_local_planner ROS Package
 The mpc_local_planner package implements a plugin to the base_local_planner of the 2D navigation stack.
 It provides a generic and versatile model predictive control implementation with minimum-time and quadratic-form receding-horizon configurations.
 
-## Authors
+### Authors
 
 * Christoph Rösmann <christoph.roesmann@tu-dortmund.de>
 
@@ -25,9 +25,7 @@ It provides a generic and versatile model predictive control implementation with
 
 ### License
 
-Copyright (c) 2020,
-TU Dortmund - Institute of Control Theory and Systems Engineering.
-All rights reserved.
+Copyright (c) 2020, Christoph Rösmann, All rights reserved.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
