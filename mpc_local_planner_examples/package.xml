@@ -16,6 +16,7 @@
 
   <exec_depend>stage_ros</exec_depend>
   <exec_depend>mpc_local_planner</exec_depend>
+  <exec_depend>mpc_local_planner_msgs</exec_depend>
   <exec_depend>move_base</exec_depend>
   <exec_depend>map_server</exec_depend>
   <exec_depend>amcl</exec_depend>
