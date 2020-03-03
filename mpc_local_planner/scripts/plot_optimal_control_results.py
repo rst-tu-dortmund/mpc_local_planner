@@ -3,7 +3,7 @@
 #
 #  Software License Agreement
 #
-#  Copyright (c) 2020, Christoph Rösmann, All rights reserved.
+#  Copyright (c) 2020, Christoph Roesmann, All rights reserved.
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-#  Authors: Christoph Rösmann
+#  Authors: Christoph Roesmann
 
 import rospy, math
 from mpc_local_planner_msgs.msg import OptimalControlResult
