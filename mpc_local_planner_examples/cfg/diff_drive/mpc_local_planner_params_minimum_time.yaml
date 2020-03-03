@@ -59,7 +59,7 @@ MpcLocalPlannerROS:
         orientation_weight: 0.0
         via_points_ordered: False
     terminal_cost:
-      type: "quadratic" # can be "none"
+      type: "none" # can be "none"
       quadratic:
         final_state_weights: [2.0, 2.0, 2.0]
     terminal_constraint:
