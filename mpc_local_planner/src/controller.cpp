@@ -290,11 +290,11 @@ corbo::DiscretizationGridInterface::Ptr Controller::configureGrid(const ros::Nod
         grid->setXfFixed(xf_fixed_eigen);
 
         bool warm_start = true;
-        nh.param("warm_start", warm_start, warm_start);
+        nh.param("grid/warm_start", warm_start, warm_start);
         grid->setWarmStart(warm_start);
 
         std::string collocation_method = "forward_differences";
-        nh.param("collocation_method", collocation_method, collocation_method);
+        nh.param("grid/collocation_method", collocation_method, collocation_method);
 
         if (collocation_method == "forward_differences")
         {
@@ -314,7 +314,7 @@ corbo::DiscretizationGridInterface::Ptr Controller::configureGrid(const ros::Nod
         }
 
         std::string cost_integration_method = "left_sum";
-        nh.param("cost_integration_method", cost_integration_method, cost_integration_method);
+        nh.param("grid/cost_integration_method", cost_integration_method, cost_integration_method);
 
         if (cost_integration_method == "left_sum")
         {
