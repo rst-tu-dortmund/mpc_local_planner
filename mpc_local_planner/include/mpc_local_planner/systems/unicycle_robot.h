@@ -72,7 +72,7 @@ class UnicycleModel : public BaseRobotSE2
     {
         assert(u.size() == getInputDimension());
         twist.linear.x = u[0];
-        twist.linear.y = twist.linear.y = 0;
+        twist.linear.y = twist.linear.z = 0;
 
         twist.angular.z = u[1];
         twist.angular.x = twist.angular.y = 0;
