@@ -81,7 +81,7 @@ class SimpleCarModel : public BaseRobotSE2
     {
         assert(u.size() == getInputDimension());
         twist.linear.x = u[0];
-        twist.linear.y = twist.linear.y = 0;
+        twist.linear.y = twist.linear.z = 0;
 
         twist.angular.z = u[1];  // warning, this is the angle and not the angular vel
         twist.angular.x = twist.angular.y = 0;
