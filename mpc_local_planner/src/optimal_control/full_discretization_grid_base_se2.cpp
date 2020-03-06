@@ -71,7 +71,7 @@ corbo::GridUpdateResult FullDiscretizationGridBaseSE2::update(const Eigen::Vecto
         setPreviousControl(Eigen::VectorXd::Zero(dynamics->getInputDimension()), prev_u_dt);
 
     // set last control to uref
-    setLastControlRef(uref.getReferenceCached(n));
+    setLastControlRef(uref.getReferenceCached(n - 1));
 
     // TODO(roesmann): we do not check if bounds in nlp_fun are updated
     // updateBounds(); // calling this everytime is not efficient
@@ -554,8 +554,10 @@ void FullDiscretizationGridBaseSE2::getVertices(std::vector<VertexInterface*>& v
     for (VectorVertexSE2& vtx : _x_seq) vertices.push_back(&vtx);
     for (VectorVertex& vtx : _u_seq) vertices.push_back(&vtx);
     vertices.push_back(&_xf);
-    vertices.push_back(&_dt);      // make sure to make it fixed if desired in any subclass
-    vertices.push_back(&_u_prev);  // always fixed...
+    vertices.push_back(&_dt);         // make sure to make it fixed if desired in any subclass
+    vertices.push_back(&_u_prev);     // always fixed...
+    vertices.push_back(&_u_prev_dt);  // always fixed...
+    vertices.push_back(&_u_ref);      // always fixed...
 }
 
 void FullDiscretizationGridBaseSE2::computeActiveVertices()
