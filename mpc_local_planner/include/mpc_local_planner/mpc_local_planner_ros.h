@@ -193,6 +193,7 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
 
     /**
      * @brief Get the current robot footprint/contour model
+     * @param costmap_ros reference to an intialized instance of costmap_2d::Costmap2dROS
      * @return Robot footprint model used for optimization
      */
     static RobotFootprintModelPtr getRobotFootprintFromCostmap2d(costmap_2d::Costmap2DROS* costmap_ros);
