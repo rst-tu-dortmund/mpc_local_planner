@@ -984,11 +984,11 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
     return boost::make_shared<teb_local_planner::PointRobotFootprint>();
 }
 
-teb_local_planner::RobotFootprintModelPtr getRobotFootprintFromCostmap2d()
+teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromCostmap2d()
 {
     Point2dContainer footprint;
     Eigen::Vector2d pt;
-    geometry_msgs::Polygon polygon = _costmap_ros.getRobotFootprintPolygon();
+    geometry_msgs::Polygon polygon = _costmap_ros->getRobotFootprintPolygon();
 
     for (int i = 0; i < polygon.points.size(); ++i)
     {
