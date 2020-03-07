@@ -108,7 +108,7 @@ void MpcLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
         _robot_base_frame = _costmap_ros->getBaseFrameID();
 
         // create robot footprint/contour model for optimization
-        _robot_model = getRobotFootprintFromParamServer(nh);
+        _robot_model = getRobotFootprintFromParamServer(nh, _costmap_ros);
 
         // create the planner instance
         if (!_controller.configure(nh, _obstacles, _robot_model, _via_points))
@@ -850,7 +850,7 @@ void MpcLocalPlannerROS::customViaPointsCB(const nav_msgs::Path::ConstPtr& via_p
     _custom_via_points_active = !_via_points.empty();
 }
 
-teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromParamServer(const ros::NodeHandle& nh)
+teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromParamServer(const ros::NodeHandle& nh, costmap_2d::Costmap2DROS* costmap_ros)
 {
     std::string model_name;
     if (!nh.getParam("footprint_model/type", model_name))
@@ -863,7 +863,7 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
     if (model_name.compare("costmap_2d") == 0)
     {
         ROS_INFO("Footprint model loaded from costmap_2d for trajectory optimization.");
-        return getRobotFootprintFromCostmap2d();
+        return getRobotFootprintFromCostmap2d(costmap_ros);
     }
 
     // point
@@ -984,11 +984,17 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
     return boost::make_shared<teb_local_planner::PointRobotFootprint>();
 }
 
-teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromCostmap2d()
+teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromCostmap2d(costmap_2d::Costmap2DROS* costmap_ros)
 {
+    if (!costmap_ros)
+    {
+        ROS_WARN_STREAM("Costmap 2d pointer is null. Using point model instead.");
+        return boost::make_shared<teb_local_planner::PointRobotFootprint>();
+    }
+
     Point2dContainer footprint;
     Eigen::Vector2d pt;
-    geometry_msgs::Polygon polygon = _costmap_ros->getRobotFootprintPolygon();
+    geometry_msgs::Polygon polygon = costmap_ros->getRobotFootprintPolygon();
 
     for (int i = 0; i < polygon.points.size(); ++i)
     {

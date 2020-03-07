@@ -91,8 +91,7 @@ void TestMpcOptimNode::start(ros::NodeHandle& nh)
     ros::Subscriber via_points_sub = nh.subscribe("via_points", 1, &TestMpcOptimNode::CB_via_points, this);
 
     // Setup robot shape model
-    mpc_local_planner::MpcLocalPlannerROS mpcl;
-    teb_local_planner::RobotFootprintModelPtr robot_model = mpcl.getRobotFootprintFromParamServer(nh);
+    teb_local_planner::RobotFootprintModelPtr robot_model = mpc_local_planner::MpcLocalPlannerROS::getRobotFootprintFromParamServer(nh, nullptr);
 
     mpc_local_planner::Controller controller;
     if (!controller.configure(nh, _obstacles, robot_model, _via_points))
