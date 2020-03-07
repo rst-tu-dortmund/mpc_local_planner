@@ -97,16 +97,6 @@ void MpcLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
         // reserve some memory for obstacles
         _obstacles.reserve(700);
 
-        // create robot footprint/contour model for optimization
-        _robot_model = getRobotFootprintFromParamServer(nh);
-
-        // create the planner instance
-        if (!_controller.configure(nh, _obstacles, _robot_model, _via_points))
-        {
-            ROS_ERROR("Controller configuration failed.");
-            return;
-        }
-
         // init other variables
         _tf          = tf;
         _costmap_ros = costmap_ros;
@@ -116,6 +106,16 @@ void MpcLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
 
         _global_frame     = _costmap_ros->getGlobalFrameID();
         _robot_base_frame = _costmap_ros->getBaseFrameID();
+
+        // create robot footprint/contour model for optimization
+        _robot_model = getRobotFootprintFromParamServer(nh);
+
+        // create the planner instance
+        if (!_controller.configure(nh, _obstacles, _robot_model, _via_points))
+        {
+            ROS_ERROR("Controller configuration failed.");
+            return;
+        }
 
         // create visualization instance
         _publisher.initialize(nh, _controller.getRobotDynamics(), _global_frame);
@@ -859,6 +859,13 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
         return boost::make_shared<teb_local_planner::PointRobotFootprint>();
     }
 
+    // from costmap_2d
+    if (model_name.compare("costmap_2d") == 0)
+    {
+        ROS_INFO("Footprint model loaded from costmap_2d for trajectory optimization.");
+        return getRobotFootprintFromCostmap2d();
+    }
+
     // point
     if (model_name.compare("point") == 0)
     {
@@ -975,6 +982,22 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
     ROS_WARN_STREAM("Unknown robot footprint model specified with parameter '" << nh.getNamespace()
                                                                                << "/footprint_model/type'. Using point model instead.");
     return boost::make_shared<teb_local_planner::PointRobotFootprint>();
+}
+
+teb_local_planner::RobotFootprintModelPtr getRobotFootprintFromCostmap2d()
+{
+    Point2dContainer footprint;
+    Eigen::Vector2d pt;
+    geometry_msgs::Polygon polygon = _costmap_ros.getRobotFootprintPolygon();
+
+    for (int i = 0; i < polygon.points.size(); ++i)
+    {
+        pt.x() = polygon.points[i].x;
+        pt.y() = polygon.points[i].y;
+
+        footprint.push_back(pt);
+    }
+    return boost::make_shared<teb_local_planner::PolygonRobotFootprint>(footprint);
 }
 
 teb_local_planner::Point2dContainer MpcLocalPlannerROS::makeFootprintFromXMLRPC(XmlRpc::XmlRpcValue& footprint_xmlrpc,
