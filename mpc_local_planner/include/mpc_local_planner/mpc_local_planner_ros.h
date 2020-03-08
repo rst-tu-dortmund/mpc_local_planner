@@ -186,9 +186,17 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
     /**
      * @brief Get the current robot footprint/contour model
      * @param nh const reference to the local ros::NodeHandle
+     * @param costmap_ros pointer to an intialized instance of costmap_2d::Costmap2dROS
      * @return Robot footprint model used for optimization
      */
-    static RobotFootprintModelPtr getRobotFootprintFromParamServer(const ros::NodeHandle& nh);
+    static RobotFootprintModelPtr getRobotFootprintFromParamServer(const ros::NodeHandle& nh, costmap_2d::Costmap2DROS* costmap_ros = nullptr);
+
+    /**
+     * @brief Get the current robot footprint/contour model
+     * @param costmap_ros reference to an intialized instance of costmap_2d::Costmap2dROS
+     * @return Robot footprint model used for optimization
+     */
+    static RobotFootprintModelPtr getRobotFootprintFromCostmap2d(costmap_2d::Costmap2DROS& costmap_ros);
 
     /**
      * @brief Set the footprint from the given XmlRpcValue.
