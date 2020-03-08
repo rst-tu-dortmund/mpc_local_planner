@@ -862,8 +862,13 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
     // from costmap_2d
     if (model_name.compare("costmap_2d") == 0)
     {
+        if (!costmap_ros)
+        {
+            ROS_WARN_STREAM("Costmap 2d pointer is null. Using point model instead.");
+            return boost::make_shared<teb_local_planner::PointRobotFootprint>();
+        }
         ROS_INFO("Footprint model loaded from costmap_2d for trajectory optimization.");
-        return getRobotFootprintFromCostmap2d(costmap_ros);
+        return getRobotFootprintFromCostmap2d(*costmap_ros);
     }
 
     // point
@@ -984,17 +989,11 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
     return boost::make_shared<teb_local_planner::PointRobotFootprint>();
 }
 
-teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromCostmap2d(costmap_2d::Costmap2DROS* costmap_ros)
+teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromCostmap2d(costmap_2d::Costmap2DROS& costmap_ros)
 {
-    if (!costmap_ros)
-    {
-        ROS_WARN_STREAM("Costmap 2d pointer is null. Using point model instead.");
-        return boost::make_shared<teb_local_planner::PointRobotFootprint>();
-    }
-
     Point2dContainer footprint;
     Eigen::Vector2d pt;
-    geometry_msgs::Polygon polygon = costmap_ros->getRobotFootprintPolygon();
+    geometry_msgs::Polygon polygon = costmap_ros.getRobotFootprintPolygon();
 
     for (int i = 0; i < polygon.points.size(); ++i)
     {
