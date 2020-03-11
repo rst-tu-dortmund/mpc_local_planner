@@ -4,6 +4,13 @@ mpc_local_planner ROS Package
 The mpc_local_planner package implements a plugin to the base_local_planner of the 2D navigation stack.
 It provides a generic and versatile model predictive control implementation with minimum-time and quadratic-form receding-horizon configurations.
 
+For custom build instructions (e.g. compilation with other third-party solvers) see [this wiki](https://github.com/rst-tu-dortmund/mpc_local_planner/wiki).
+
+Refer to http://wiki.ros.org/mpc_local_planner for more general information and tutorials.
+
+Build status:
+- ROS Melodic (*melodic-devel*): [![Melodic Status](http://build.ros.org/buildStatus/icon?job=Mdev__mpc_local_planner__ubuntu_bionic_amd64)](http://build.ros.org/job/Mdev__mpc_local_planner__ubuntu_bionic_amd64/)
+
 ## Authors
 
 * Christoph Rösmann <christoph.roesmann@tu-dortmund.de>
