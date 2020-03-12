@@ -2,8 +2,8 @@
 Changelog for package mpc_local_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2020-03-12)
+------------------
 * Added option to inherit the robot footprint model from the costmap_2d footprint by setting footprint type to `costmap_2d` (thanks to Alexander Xydes).
   Note that using a polygon as a robot footprint model is computationally more expensive than using two circle or line models.
 * Fixed issues in fd discretization grid and graph consistency

@@ -2,8 +2,8 @@
 Changelog for package mpc_local_planner_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2020-03-12)
+------------------
 * Added dependency on mpc_local_planner_msgs package
 * Default parameter set changed
 * Contributors: Christoph Rösmann
