@@ -25,7 +25,7 @@ Build status:
 
 **Time-Optimal MPC and Hypergraph**
 
-- C. Rösmann: [Time-optimal nonlinear model predictive control - Direct transcription methods with variable discretization and structural sparsity exploitation](http://dx.doi.org/10.17877/DE290R-20283). Dissertation, TU Dortmund University, Oct. 2019.
+- C. Rösmann: [Time-optimal nonlinear model predictive control, Direct transcription methods with variable discretization and structural sparsity exploitation](http://dx.doi.org/10.17877/DE290R-20283). Dissertation, Technische Universität Dortmund, Oct. 2019.
 - C. Rösmann, F. Hoffmann und T. Bertram: Timed-Elastic-Bands for Time-Optimal Point-to-Point Nonlinear Model Predictive Control, European Control Conference (ECC), Austria, July 2015.
 - C. Rösmann, F. Hoffman und T. Bertram: Convergence Analysis of Time-Optimal Model Predictive Control under Limited Computational Resources, European Control Conference (ECC), Denmark, June 2016.
 
