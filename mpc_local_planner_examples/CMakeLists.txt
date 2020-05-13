@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.1)
 project(mpc_local_planner_examples)
 
 ## Find catkin macros and libraries
