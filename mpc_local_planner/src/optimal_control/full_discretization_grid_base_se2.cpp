@@ -168,7 +168,7 @@ void FullDiscretizationGridBaseSE2::initializeSequences(const Eigen::VectorXd& x
     {
         // add new state by linear interpolation
         Eigen::VectorXd new_x = x0 + (double)k * step * dir;
-        new_x[2]              = orient_init;
+        if (k > 0) new_x[2] = orient_init; // but do not overwrite start orientation
         _x_seq.emplace_back(new_x, nlp_fun.x_lb, nlp_fun.x_ub);
         // add new constant control (assume u0 to hold
         _u_seq.emplace_back(uref.getReferenceCached(k), nlp_fun.u_lb, nlp_fun.u_ub);
