@@ -94,7 +94,10 @@ class MidpointDiffCollocationSE2 : public corbo::FiniteDifferencesCollocationInt
         assert(error.size() == x1.size());
         assert(dt > 0 && "dt must be greater then zero!");
 
-        system.dynamics(0.5 * (x1 + x2), u1, error);
+        Eigen::VectorXd midpoint = 0.5 * (x1 + x2);
+        // fix angular component
+        midpoint.coeffRef(2) = interpolate_angle(x1.coeffRef(2), x2.coeffRef(2), 0.5);
+        system.dynamics(midpoint, u1, error);
         error.head(2) -= (x2.head(2) - x1.head(2)) / dt;
         error.coeffRef(2) -= normalize_theta(x2.coeffRef(2) - x1.coeffRef(2)) / dt;
         if (x1.size() > 3)
