@@ -44,8 +44,8 @@ namespace mpc_local_planner {
  *     in Robot Motion Planning and Control (Ed. J.-P. Laumond), Springer, 1998.
  *     (https://homepages.laas.fr/jpl/promotion/chap4.pdf)
  *
- * @see SimpleCarFrontWheelDrivingModel BaseRobotSE2 RobotDynamicsInterface
- *      corbo::SystemDynamicsInterface
+ * @see SimpleCarFrontWheelDrivingModel KinematicBicycleModelVelocityInput
+ *      BaseRobotSE2 RobotDynamicsInterface corbo::SystemDynamicsInterface
  *
  * @author Christoph Rösmann (christoph.roesmann@tu-dortmund.de)
  */

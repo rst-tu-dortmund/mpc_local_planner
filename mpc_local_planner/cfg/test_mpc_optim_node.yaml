@@ -17,6 +17,15 @@ robot:
     acc_lim_x: 0.0 # deactive bounds with zero
     dec_lim_x: 0.0 # deactive bounds with zero
     max_steering_rate: 0.5 # deactive bounds with zero
+  kinematic_bicycle_vel_input:
+    length_rear: 1.0
+    length_front: 1.0
+    max_vel_x: 0.4
+    max_vel_x_backwards: 0.2
+    max_steering_angle: 1.4
+    acc_lim_x: 0.0 # deactive bounds with zero
+    dec_lim_x: 0.0 # deactive bounds with zero
+    max_steering_rate: 0.5 # deactive bounds with zero
 
 ## Footprint model for collision avoidance
 footprint_model:
