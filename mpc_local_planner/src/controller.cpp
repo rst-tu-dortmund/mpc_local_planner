@@ -22,6 +22,7 @@
 
 #include <mpc_local_planner/controller.h>
 
+#include <corbo-optimal-control/functions/hybrid_cost.h>
 #include <corbo-optimal-control/functions/minimum_time.h>
 #include <corbo-optimal-control/functions/quadratic_control_cost.h>
 #include <corbo-optimal-control/structured_ocp/discretization_grids/finite_differences_variable_grid.h>
@@ -591,14 +592,36 @@ corbo::StructuredOptimalControlProblem::Ptr Controller::configureOcp(const ros::
         }
         bool integral_form = false;
         nh.param("planning/objective/quadratic_form/integral_form", integral_form, integral_form);
+        bool hybrid_cost_minimum_time = false;
+        nh.param("planning/objective/quadratic_form/hybrid_cost_minimum_time", hybrid_cost_minimum_time, hybrid_cost_minimum_time);
+
         bool q_zero = Q.isZero();
         bool r_zero = R.isZero();
         if (!q_zero && !r_zero)
+        {
+            PRINT_ERROR_COND(hybrid_cost_minimum_time,
+                             "Hybrid minimum time and quadratic form cost is currently only supported for non-zero control weights only. Falling "
+                             "back to quadratic form.");
             ocp->setStageCost(std::make_shared<QuadraticFormCostSE2>(Q, R, integral_form, lsq_solver));
+        }
         else if (!q_zero && r_zero)
+        {
+            PRINT_ERROR_COND(hybrid_cost_minimum_time,
+                             "Hybrid minimum time and quadratic form cost is currently only supported for non-zero control weights only. Falling "
+                             "back to only quadratic state cost.");
             ocp->setStageCost(std::make_shared<QuadraticStateCostSE2>(Q, integral_form, lsq_solver));
+        }
         else if (q_zero && !r_zero)
-            ocp->setStageCost(std::make_shared<corbo::QuadraticControlCost>(R, integral_form, lsq_solver));
+        {
+            if (hybrid_cost_minimum_time)
+            {
+                ocp->setStageCost(std::make_shared<corbo::MinTimeQuadraticControls>(R, integral_form, lsq_solver));
+            }
+            else
+            {
+                ocp->setStageCost(std::make_shared<corbo::QuadraticControlCost>(R, integral_form, lsq_solver));
+            }
+        }
     }
     else if (objective_type == "minimum_time_via_points")
     {
