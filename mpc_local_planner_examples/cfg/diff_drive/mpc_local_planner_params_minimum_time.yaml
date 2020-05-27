@@ -70,14 +70,14 @@ MpcLocalPlannerROS:
 
   ## Controller options
   controller:
-    outer_ocp_iterations: 1
+    outer_ocp_iterations: 5
     xy_goal_tolerance: 0.2
     yaw_goal_tolerance: 0.1
     global_plan_overwrite_orientation: true
     global_plan_prune_distance: 1.0
     allow_init_with_backward_motion: True
     max_global_plan_lookahead_dist: 1.5 
-    global_plan_viapoint_sep: 0.5
+    global_plan_viapoint_sep: 5.5
     force_reinit_new_goal_dist: 1.0
     force_reinit_new_goal_angular: 1.57
     force_reinit_num_steps: 0

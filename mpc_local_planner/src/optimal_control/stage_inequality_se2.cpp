@@ -39,6 +39,12 @@ int StageInequalitySE2::getNonIntegralStateTermDimension(int k) const
     return (int)_relevant_obstacles[k].size();
 }
 
+int StageInequalitySE2::getNonIntegralStateDtTermDimension(int k) const
+{
+    assert(k < _relevant_dyn_obstacles.size());
+    return (int)_relevant_dyn_obstacles[k].size();
+}
+
 bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryInterface& /*xref*/, corbo::ReferenceTrajectoryInterface& /*uref*/,
                                 corbo::ReferenceTrajectoryInterface* /*sref*/, bool /* single_dt*/, const Eigen::VectorXd& x0,
                                 corbo::StagePreprocessor::Ptr /*stage_preprocessor*/, const std::vector<double>& /*dts*/,
@@ -54,9 +60,10 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
     // Alternatively, other grids could be used in combination with method getStateAndControlTimeSeries()
     const FullDiscretizationGridBaseSE2* fd_grid = static_cast<const FullDiscretizationGridBaseSE2*>(grid);
 
-    bool new_dimensions = (n != _relevant_obstacles.size());
+    bool new_dimensions = (n != _relevant_obstacles.size()) || (n != _relevant_dyn_obstacles.size());
 
     _relevant_obstacles.resize(n);
+    _relevant_dyn_obstacles.resize(n);
 
     teb_local_planner::PoseSE2 pose;
 
@@ -78,6 +85,8 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
 
         int num_prev_obst = (int)_relevant_obstacles[k].size();
         _relevant_obstacles[k].clear();
+        int num_prev_dyn_obst = (int)_relevant_dyn_obstacles[k].size();
+        _relevant_dyn_obstacles[k].clear();
 
         // iterate obstacles
         for (const ObstaclePtr& obst : *_obstacles)
@@ -88,7 +97,7 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
                 // we consider all dynamic obstacles by now
                 // TODO(roesmann): we might remove obstacles that "go away" from the trajectory
                 // or more generally that any intersection in the future is unlikely
-                _relevant_obstacles[k].push_back(obst);
+                _relevant_dyn_obstacles[k].push_back(obst);
                 continue;
             }
 
@@ -129,6 +138,7 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
 
         // check if dimensions changed
         new_dimensions = new_dimensions || (_relevant_obstacles[k].size() != num_prev_obst);
+        new_dimensions = new_dimensions || (_relevant_dyn_obstacles[k].size() != num_prev_dyn_obst);
     }
 
     // update current dt
@@ -156,15 +166,22 @@ void StageInequalitySE2::computeNonIntegralStateTerm(int k, const Eigen::Ref<con
     teb_local_planner::PoseSE2 pose(x_k[0], x_k[1], x_k[2]);
     for (int i = 0; i < (int)_relevant_obstacles[k].size(); ++i)
     {
-        if (!_enable_dynamic_obstacles || !_relevant_obstacles[k][i]->isDynamic())
-        {
-            cost[i] = _min_obstacle_dist - _robot_model->calculateDistance(pose, _relevant_obstacles[k][i].get());
-        }
-        else
-        {
-            cost[i] =
-                _min_obstacle_dist - _robot_model->estimateSpatioTemporalDistance(pose, _relevant_obstacles[k][i].get(), (double)k * _current_dt);
-        }
+        cost[i] = _min_obstacle_dist - _robot_model->calculateDistance(pose, _relevant_obstacles[k][i].get());
+    }
+}
+
+void StageInequalitySE2::computeNonIntegralStateDtTerm(int k, const Eigen::Ref<const Eigen::VectorXd>& x_k, double dt_k,
+                                                       Eigen::Ref<Eigen::VectorXd> cost) const
+{
+    assert(_obstacles);
+    assert(k < _relevant_dyn_obstacles.size());
+    assert(cost.size() == _relevant_dyn_obstacles[k].size());
+
+    // TODO(roesmann): Overload robot fooprint model functions in teb_local_planner to avoid this copy:
+    teb_local_planner::PoseSE2 pose(x_k[0], x_k[1], x_k[2]);
+    for (int i = 0; i < (int)_relevant_dyn_obstacles[k].size(); ++i)
+    {
+        cost[i] = _min_obstacle_dist - _robot_model->estimateSpatioTemporalDistance(pose, _relevant_dyn_obstacles[k][i].get(), (double)k * dt_k);
     }
 }
 
