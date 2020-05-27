@@ -35,12 +35,14 @@ int StageInequalitySE2::getNonIntegralControlDeviationTermDimension(int k) const
 
 int StageInequalitySE2::getNonIntegralStateTermDimension(int k) const
 {
+    if (!_obstacles) return 0;
     assert(k < _relevant_obstacles.size());
     return (int)_relevant_obstacles[k].size();
 }
 
 int StageInequalitySE2::getNonIntegralStateDtTermDimension(int k) const
 {
+    if (!_obstacles) return 0;
     assert(k < _relevant_dyn_obstacles.size());
     return (int)_relevant_dyn_obstacles[k].size();
 }
@@ -50,8 +52,8 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
                                 corbo::StagePreprocessor::Ptr /*stage_preprocessor*/, const std::vector<double>& /*dts*/,
                                 const corbo::DiscretizationGridInterface* grid)
 {
-    assert(_obstacles);
-    assert(_robot_model);
+    PRINT_WARNING_COND_ONCE(!_obstacles, "StageInequalitySE2 requires a valid obstacle ptr which is not null (ignoring obstacle avoidance).");
+    PRINT_WARNING_COND_ONCE(!_robot_model, "StageInequalitySE2 requires a valid robot model ptr which is not null (ignoring obstacle avoidance).");
 
     // Setup obstacle avoidance
 
@@ -89,45 +91,48 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
         _relevant_dyn_obstacles[k].clear();
 
         // iterate obstacles
-        for (const ObstaclePtr& obst : *_obstacles)
+        if (_obstacles && _robot_model)
         {
-            // check for dynamic obstacle
-            if (_enable_dynamic_obstacles && obst->isDynamic())
+            for (const ObstaclePtr& obst : *_obstacles)
             {
-                // we consider all dynamic obstacles by now
-                // TODO(roesmann): we might remove obstacles that "go away" from the trajectory
-                // or more generally that any intersection in the future is unlikely
-                _relevant_dyn_obstacles[k].push_back(obst);
-                continue;
-            }
-
-            // calculate distance to robot model
-            double dist = _robot_model->calculateDistance(pose, obst.get());
-
-            // force considering obstacle if really close to the current pose
-            if (dist < _min_obstacle_dist * _obstacle_filter_force_inclusion_factor)
-            {
-                _relevant_obstacles[k].push_back(obst);
-                continue;
-            }
-            // cut-off distance
-            if (dist > _min_obstacle_dist * _obstacle_filter_cutoff_factor) continue;
-
-            // determine side (left or right) and assign obstacle if closer than the previous one
-            if (cross2d(pose_orient, obst->getCentroid()) > 0)  // left
-            {
-                if (dist < left_min_dist)
+                // check for dynamic obstacle
+                if (_enable_dynamic_obstacles && obst->isDynamic())
                 {
-                    left_min_dist = dist;
-                    left_obstacle = obst;
+                    // we consider all dynamic obstacles by now
+                    // TODO(roesmann): we might remove obstacles that "go away" from the trajectory
+                    // or more generally that any intersection in the future is unlikely
+                    _relevant_dyn_obstacles[k].push_back(obst);
+                    continue;
                 }
-            }
-            else
-            {
-                if (dist < right_min_dist)
+
+                // calculate distance to robot model
+                double dist = _robot_model->calculateDistance(pose, obst.get());
+
+                // force considering obstacle if really close to the current pose
+                if (dist < _min_obstacle_dist * _obstacle_filter_force_inclusion_factor)
                 {
-                    right_min_dist = dist;
-                    right_obstacle = obst;
+                    _relevant_obstacles[k].push_back(obst);
+                    continue;
+                }
+                // cut-off distance
+                if (dist > _min_obstacle_dist * _obstacle_filter_cutoff_factor) continue;
+
+                // determine side (left or right) and assign obstacle if closer than the previous one
+                if (cross2d(pose_orient, obst->getCentroid()) > 0)  // left
+                {
+                    if (dist < left_min_dist)
+                    {
+                        left_min_dist = dist;
+                        left_obstacle = obst;
+                    }
+                }
+                else
+                {
+                    if (dist < right_min_dist)
+                    {
+                        right_min_dist = dist;
+                        right_obstacle = obst;
+                    }
                 }
             }
         }
@@ -158,7 +163,6 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
 
 void StageInequalitySE2::computeNonIntegralStateTerm(int k, const Eigen::Ref<const Eigen::VectorXd>& x_k, Eigen::Ref<Eigen::VectorXd> cost) const
 {
-    assert(_obstacles);
     assert(k < _relevant_obstacles.size());
     assert(cost.size() == _relevant_obstacles[k].size());
 
@@ -173,7 +177,6 @@ void StageInequalitySE2::computeNonIntegralStateTerm(int k, const Eigen::Ref<con
 void StageInequalitySE2::computeNonIntegralStateDtTerm(int k, const Eigen::Ref<const Eigen::VectorXd>& x_k, double dt_k,
                                                        Eigen::Ref<Eigen::VectorXd> cost) const
 {
-    assert(_obstacles);
     assert(k < _relevant_dyn_obstacles.size());
     assert(cost.size() == _relevant_dyn_obstacles[k].size());
 
