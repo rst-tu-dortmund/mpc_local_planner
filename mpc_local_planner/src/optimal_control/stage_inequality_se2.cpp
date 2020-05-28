@@ -109,13 +109,13 @@ bool StageInequalitySE2::update(int n, double /*t*/, corbo::ReferenceTrajectoryI
                 double dist = _robot_model->calculateDistance(pose, obst.get());
 
                 // force considering obstacle if really close to the current pose
-                if (dist < _min_obstacle_dist * _obstacle_filter_force_inclusion_factor)
+                if (dist < _obstacle_filter_force_inclusion_dist)
                 {
                     _relevant_obstacles[k].push_back(obst);
                     continue;
                 }
                 // cut-off distance
-                if (dist > _min_obstacle_dist * _obstacle_filter_cutoff_factor) continue;
+                if (dist > _obstacle_filter_cutoff_dist) continue;
 
                 // determine side (left or right) and assign obstacle if closer than the previous one
                 if (cross2d(pose_orient, obst->getCentroid()) > 0)  // left

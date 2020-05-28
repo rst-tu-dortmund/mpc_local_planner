@@ -91,10 +91,10 @@ class StageInequalitySE2 : public corbo::StageInequalityConstraint
     //! Set minimum distance allowed
     void setMinimumDistance(double min_dist) { _min_obstacle_dist = min_dist; }
     //! Set parameters for prior filtering of obstacles
-    void setObstacleFilterParameters(double force_inclusion_factor, double cutoff_factor)
+    void setObstacleFilterParameters(double force_inclusion_dist, double cutoff_dist)
     {
-        _obstacle_filter_force_inclusion_factor = force_inclusion_factor;
-        _obstacle_filter_cutoff_factor          = cutoff_factor;
+        _obstacle_filter_force_inclusion_dist = force_inclusion_dist;
+        _obstacle_filter_cutoff_dist          = cutoff_dist;
     }
     //! Set to true to enable dynamic obstacle (constant-velocity prediction)
     void setEnableDynamicObstacles(bool enable_dyn_obst) { _enable_dynamic_obstacles = enable_dyn_obst; }
@@ -115,10 +115,10 @@ class StageInequalitySE2 : public corbo::StageInequalityConstraint
     int _num_du_lb_finite = 0;
     int _num_du_ub_finite = 0;
 
-    double _min_obstacle_dist                      = 0.1;
-    double _obstacle_filter_force_inclusion_factor = 1.5;
-    double _obstacle_filter_cutoff_factor          = 5;
-    bool _enable_dynamic_obstacles                 = false;
+    double _min_obstacle_dist                    = 0.1;
+    double _obstacle_filter_force_inclusion_dist = 1.5;
+    double _obstacle_filter_cutoff_dist          = 5;
+    bool _enable_dynamic_obstacles               = false;
 
     Eigen::VectorXd _du_lb;
     Eigen::VectorXd _du_ub;

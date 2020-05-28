@@ -722,11 +722,11 @@ corbo::StructuredOptimalControlProblem::Ptr Controller::configureOcp(const ros::
     nh.param("collision_avoidance/enable_dynamic_obstacles", enable_dynamic_obstacles, enable_dynamic_obstacles);
     _inequality_constraint->setEnableDynamicObstacles(enable_dynamic_obstacles);
 
-    double force_inclusion_factor = 1.5;
-    nh.param("collision_avoidance/force_inclusion_factor", force_inclusion_factor, force_inclusion_factor);
-    double cutoff_factor = 5;
-    nh.param("collision_avoidance/cutoff_factor", cutoff_factor, cutoff_factor);
-    _inequality_constraint->setObstacleFilterParameters(force_inclusion_factor, cutoff_factor);
+    double force_inclusion_dist = 0.5;
+    nh.param("collision_avoidance/force_inclusion_dist", force_inclusion_dist, force_inclusion_dist);
+    double cutoff_dist = 2;
+    nh.param("collision_avoidance/cutoff_dist", cutoff_dist, cutoff_dist);
+    _inequality_constraint->setObstacleFilterParameters(force_inclusion_dist, cutoff_dist);
 
     // configure control deviation bounds
 

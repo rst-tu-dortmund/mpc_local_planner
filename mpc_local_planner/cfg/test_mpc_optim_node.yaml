@@ -34,8 +34,8 @@ footprint_model:
 collision_avoidance:
   min_obstacle_dist: 0.5 # Note, this parameter must be chosen w.r.t. the footprint_model
   enable_dynamic_obstacles: False
-  force_inclusion_factor: 1.5
-  cutoff_factor: 5  
+  force_inclusion_dist: 0.5
+  cutoff_dist: 2.5 
 
 ## Planning grid 
 grid:
