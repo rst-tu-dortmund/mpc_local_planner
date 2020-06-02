@@ -88,6 +88,10 @@ void MpcLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
         nh.param("collision_avoidance/costmap_obstacles_behind_robot_dist", _params.costmap_obstacles_behind_robot_dist,
                  _params.costmap_obstacles_behind_robot_dist);
 
+        nh.param("collision_avoidance/collision_check_no_poses", _params.collision_check_no_poses, _params.collision_check_no_poses);
+        nh.param("collision_avoidance/collision_check_min_resolution_angular", _params.collision_check_min_resolution_angular,
+                 _params.collision_check_min_resolution_angular);
+
         // costmap converter plugin related parameters
         nh.param("costmap_converter_plugin", _costmap_conv_params.costmap_converter_plugin, _costmap_conv_params.costmap_converter_plugin);
         nh.param("costmap_converter_rate", _costmap_conv_params.costmap_converter_rate, _costmap_conv_params.costmap_converter_rate);
@@ -371,25 +375,22 @@ uint32_t MpcLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
         costmap_2d::calculateMinAndMaxDistances(_footprint_spec, _robot_inscribed_radius, _robot_circumscribed_radius);
     }
 
-    /*
-     // check feasibility w.r.t. the original costmap footprint
-    bool feasible = planner_->isTrajectoryFeasible(costmap_model_.get(), footprint_spec_, robot_inscribed_radius_, robot_circumscribed_radius,
-                                                   cfg_.trajectory.feasibility_check_no_poses);
+    bool feasible = _controller.isPoseTrajectoryFeasible(_costmap_model.get(), _footprint_spec, _robot_inscribed_radius, _robot_circumscribed_radius,
+                                                         _params.collision_check_min_resolution_angular, _params.collision_check_no_poses);
     if (!feasible)
     {
         cmd_vel.twist.linear.x = cmd_vel.twist.linear.y = cmd_vel.twist.angular.z = 0;
 
         // now we reset everything to start again with the initialization of new trajectories.
-        planner_->clearPlanner();
-        ROS_WARN("TebLocalPlannerROS: trajectory is not feasible. Resetting planner...");
-
-        ++no_infeasible_plans_;  // increase number of infeasible solutions in a row
-        time_last_infeasible_plan_ = ros::Time::now();
-        last_cmd_                  = cmd_vel.twist;
-        message                    = "teb_local_planner trajectory is not feasible";
+        _controller.reset();  // force reinitialization for next time
+        ROS_WARN("MpcLocalPlannerROS: trajectory is not feasible. Resetting planner...");
+        ++_no_infeasible_plans;  // increase number of infeasible solutions in a row
+        _time_last_infeasible_plan = ros::Time::now();
+        _last_cmd                  = cmd_vel.twist;
+        message                    = "mpc_local_planner trajectory is not feasible";
         return mbf_msgs::ExePathResult::NO_VALID_CMD;
     }
-*/
+
     // Get the velocity command for this sampling interval
     // TODO(roesmann): we might also command more than just the imminent action, e.g. in a separate thread, until a new command is available
     if (!_u_seq || !_controller.getRobotDynamics()->getTwistFromControl(_u_seq->getValuesMap(0), cmd_vel.twist))
@@ -850,7 +851,8 @@ void MpcLocalPlannerROS::customViaPointsCB(const nav_msgs::Path::ConstPtr& via_p
     _custom_via_points_active = !_via_points.empty();
 }
 
-teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromParamServer(const ros::NodeHandle& nh, costmap_2d::Costmap2DROS* costmap_ros)
+teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintFromParamServer(const ros::NodeHandle& nh,
+                                                                                               costmap_2d::Costmap2DROS* costmap_ros)
 {
     std::string model_name;
     if (!nh.getParam("footprint_model/type", model_name))

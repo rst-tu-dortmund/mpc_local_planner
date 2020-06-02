@@ -407,17 +407,19 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
 
     struct Parameters
     {
-        double xy_goal_tolerance                   = 0.2;
-        double yaw_goal_tolerance                  = 0.1;
-        bool global_plan_overwrite_orientation     = true;
-        double global_plan_prune_distance          = 1.0;
-        double max_global_plan_lookahead_dist      = 1.5;
-        bool is_footprint_dynamic                  = false;
-        bool include_costmap_obstacles             = true;
-        double costmap_obstacles_behind_robot_dist = 1.5;
-        double global_plan_viapoint_sep            = -1;
-        std::string odom_topic                     = "odom";
-        double controller_frequency                = 10;
+        double xy_goal_tolerance                      = 0.2;
+        double yaw_goal_tolerance                     = 0.1;
+        bool global_plan_overwrite_orientation        = true;
+        double global_plan_prune_distance             = 1.0;
+        double max_global_plan_lookahead_dist         = 1.5;
+        bool is_footprint_dynamic                     = false;
+        bool include_costmap_obstacles                = true;
+        double costmap_obstacles_behind_robot_dist    = 1.5;
+        double global_plan_viapoint_sep               = -1;
+        double collision_check_min_resolution_angular = M_PI;
+        int collision_check_no_poses                  = -1;
+        std::string odom_topic                        = "odom";
+        double controller_frequency                   = 10;
 
     } _params;
 

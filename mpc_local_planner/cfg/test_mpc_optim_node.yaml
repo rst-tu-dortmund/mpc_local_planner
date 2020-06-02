@@ -36,6 +36,7 @@ collision_avoidance:
   enable_dynamic_obstacles: False
   force_inclusion_dist: 0.5
   cutoff_dist: 2.5 
+  collision_check_no_poses: 5
 
 ## Planning grid 
 grid:

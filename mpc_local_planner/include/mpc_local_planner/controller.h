@@ -33,6 +33,8 @@
 
 #include <mpc_local_planner_msgs/StateFeedback.h>
 
+#include <base_local_planner/costmap_model.h>
+
 #include <ros/subscriber.h>
 #include <ros/time.h>
 
@@ -78,6 +80,25 @@ class Controller : public corbo::PredictiveController
     void publishOptimalControlResult();
 
     void setInitialPlanEstimateOrientation(bool estimate) { _initial_plan_estimate_orientation = estimate; }
+
+    /**
+     * @brief Check whether the planned trajectory is feasible or not.
+     *
+     * This method currently checks only that the trajectory, or a part of the trajectory is collision free.
+     * Obstacles are here represented as costmap instead of the internal ObstacleContainer.
+     * @param costmap_model Pointer to the costmap model
+     * @param footprint_spec The specification of the footprint of the robot in world coordinates
+     * @param inscribed_radius The radius of the inscribed circle of the robot
+     * @param circumscribed_radius The radius of the circumscribed circle of the robot
+     * @param min_resolution_collision_check_angular Min angular resolution during the costmap collision check:
+     *        if not respected intermediate samples are added. [rad]
+     * @param look_ahead_idx Number of poses along the trajectory that should be verified, if -1, the complete trajectory will be checked.
+     * @return \c true, if the robot footprint along the first part of the trajectory intersects with
+     *         any obstacle in the costmap, \c false otherwise.
+     */
+    virtual bool isPoseTrajectoryFeasible(base_local_planner::CostmapModel* costmap_model, const std::vector<geometry_msgs::Point>& footprint_spec,
+                                          double inscribed_radius = 0.0, double circumscribed_radius = 0.0,
+                                          double min_resolution_collision_check_angular = M_PI, int look_ahead_idx = -1);
 
     // implements interface method
     void reset() override;

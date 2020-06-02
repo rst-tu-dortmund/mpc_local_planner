@@ -856,4 +856,64 @@ bool Controller::generateInitialStateTrajectory(const Eigen::VectorXd& x0, const
     return true;
 }
 
+bool Controller::isPoseTrajectoryFeasible(base_local_planner::CostmapModel* costmap_model, const std::vector<geometry_msgs::Point>& footprint_spec,
+                                          double inscribed_radius, double circumscribed_radius, double min_resolution_collision_check_angular,
+                                          int look_ahead_idx)
+{
+    if (!_grid)
+    {
+        ROS_ERROR("Controller must be configured before invoking step().");
+        return false;
+    }
+    if (_grid->getN() < 2) return false;
+
+    // we currently require a full discretization grid as we want to have fast access to
+    // individual states without requiring any new simulation.
+    // Alternatively, other grids could be used in combination with method getStateAndControlTimeSeries()
+    const FullDiscretizationGridBaseSE2* fd_grid = dynamic_cast<const FullDiscretizationGridBaseSE2*>(_grid.get());
+    if (!fd_grid)
+    {
+        ROS_ERROR("isPoseTrajectoriyFeasible is currently only implemented for fd grids");
+        return true;
+    }
+
+    if (look_ahead_idx < 0 || look_ahead_idx >= _grid->getN()) look_ahead_idx = _grid->getN() - 1;
+
+    for (int i = 0; i <= look_ahead_idx; ++i)
+    {
+        if (costmap_model->footprintCost(fd_grid->getState(i)[0], fd_grid->getState(i)[1], fd_grid->getState(i)[2], footprint_spec, inscribed_radius,
+                                         circumscribed_radius) == -1)
+        {
+            return false;
+        }
+        // Checks if the distance between two poses is higher than the robot radius or the orientation diff is bigger than the specified threshold
+        // and interpolates in that case.
+        // (if obstacles are pushing two consecutive poses away, the center between two consecutive poses might coincide with the obstacle ;-)!
+        if (i < look_ahead_idx)
+        {
+            double delta_rot           = normalize_theta(fd_grid->getState(i)[i + 1] - fd_grid->getState(i)[0]);
+            Eigen::Vector2d delta_dist = fd_grid->getState(i + 1).head(2) - fd_grid->getState(i).head(2);
+            if (std::abs(delta_rot) > min_resolution_collision_check_angular || delta_dist.norm() > inscribed_radius)
+            {
+                int n_additional_samples = std::max(std::ceil(std::abs(delta_rot) / min_resolution_collision_check_angular),
+                                                    std::ceil(delta_dist.norm() / inscribed_radius)) -
+                                           1;
+
+                PoseSE2 intermediate_pose(fd_grid->getState(i)[0], fd_grid->getState(i)[1], fd_grid->getState(i)[2]);
+                for (int step = 0; step < n_additional_samples; ++step)
+                {
+                    intermediate_pose.position() = intermediate_pose.position() + delta_dist / (n_additional_samples + 1.0);
+                    intermediate_pose.theta()    = g2o::normalize_theta(intermediate_pose.theta() + delta_rot / (n_additional_samples + 1.0));
+                    if (costmap_model->footprintCost(intermediate_pose.x(), intermediate_pose.y(), intermediate_pose.theta(), footprint_spec,
+                                                     inscribed_radius, circumscribed_radius) == -1)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
 }  // namespace mpc_local_planner

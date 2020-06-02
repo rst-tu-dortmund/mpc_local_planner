@@ -26,6 +26,7 @@ MpcLocalPlannerROS:
     cutoff_dist: 2.5  
     include_costmap_obstacles: True
     costmap_obstacles_behind_robot_dist: 1.5
+    collision_check_no_poses: 5
 
   ## Planning grid 
   grid:
