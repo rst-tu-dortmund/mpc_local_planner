@@ -2,8 +2,8 @@
 Changelog for package mpc_local_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2020-06-09)
+------------------
 * Added feasibility check with costmap robot model
 * Changed obstacle parameters `cutoff_factor` and `force_inclusion_factor` to `cutoff_dist` and `force_inclusion_dist`
 * Added check for obstacle pointer validity in StageInequalitySE2

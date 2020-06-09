@@ -2,8 +2,8 @@
 Changelog for package mpc_local_planner_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2020-06-09)
+------------------
 * Added feasibility check with costmap robot model
 * Changed obstacle parameters `cutoff_factor` and `force_inclusion_factor` to `cutoff_dist` and `force_inclusion_dist`
 * Dynamic obstacles: the inequality constraints now use the actual time parameter rather than the time from the previous optimization
