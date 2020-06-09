@@ -19,15 +19,19 @@ Build status:
 
 *Since a lot of time and effort has gone into the development, please cite at least one of the following publications if you are using the software for published work.*
 
+**Main Paper and Approach**
+
+- C. Rösmann, A. Makarow, and T. Bertram: Online Motion Planning based on Nonlinear Model Predictive Control with Non-Euclidean Rotation Groups, [arXiv:2006.03534 '[cs.RO]'](https://arxiv.org/abs/2006.03534), June 2020.
+
 **Standard MPC and Hypergraph**
 
-- C. Rösmann, M. Krämer, A. Makarow, F. Hoffmann und T. Bertram: Exploiting Sparse Structures in Nonlinear Model Predictive Control with Hypergraphs, IEEE/ASME International Conference on Advanced Intelligent Mechatronics (AIM), New Zealand, July 2018.
+- C. Rösmann, M. Krämer, A. Makarow, F. Hoffmann and T. Bertram: Exploiting Sparse Structures in Nonlinear Model Predictive Control with Hypergraphs, IEEE/ASME International Conference on Advanced Intelligent Mechatronics (AIM), New Zealand, July 2018.
 
 **Time-Optimal MPC and Hypergraph**
 
 - C. Rösmann: [Time-optimal nonlinear model predictive control, Direct transcription methods with variable discretization and structural sparsity exploitation](http://dx.doi.org/10.17877/DE290R-20283). Dissertation, Technische Universität Dortmund, Oct. 2019.
 - C. Rösmann, F. Hoffmann und T. Bertram: Timed-Elastic-Bands for Time-Optimal Point-to-Point Nonlinear Model Predictive Control, European Control Conference (ECC), Austria, July 2015.
-- C. Rösmann, F. Hoffman und T. Bertram: Convergence Analysis of Time-Optimal Model Predictive Control under Limited Computational Resources, European Control Conference (ECC), Denmark, June 2016.
+
 
 <a href="https://www.buymeacoffee.com/croesmann" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/guidelines/download-assets-sm-2.svg" alt="Buy Me A Coffee"></a>
 
