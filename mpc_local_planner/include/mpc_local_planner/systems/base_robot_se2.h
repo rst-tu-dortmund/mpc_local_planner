@@ -97,6 +97,7 @@ class BaseRobotSE2 : public RobotDynamicsInterface
         x[0] = odom_pose.x();
         x[1] = odom_pose.y();
         x[2] = odom_pose.theta();
+        return true;
     }
 
     // implements interface method
