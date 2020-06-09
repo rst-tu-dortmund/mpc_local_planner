@@ -2,6 +2,11 @@
 Changelog for package mpc_local_planner_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Changed minimum CMake version to 3.1
+* Contributors: Christoph Rösmann
+
 0.0.2 (2020-03-12)
 ------------------
 

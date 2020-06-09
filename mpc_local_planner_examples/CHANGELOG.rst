@@ -2,6 +2,14 @@
 Changelog for package mpc_local_planner_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added feasibility check with costmap robot model
+* Changed obstacle parameters `cutoff_factor` and `force_inclusion_factor` to `cutoff_dist` and `force_inclusion_dist`
+* Dynamic obstacles: the inequality constraints now use the actual time parameter rather than the time from the previous optimization
+* Changed minimum CMake version to 3.1
+* Contributors: Christoph Rösmann
+
 0.0.2 (2020-03-12)
 ------------------
 * Added dependency on mpc_local_planner_msgs package

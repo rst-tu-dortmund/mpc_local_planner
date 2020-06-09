@@ -2,6 +2,21 @@
 Changelog for package mpc_local_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added feasibility check with costmap robot model
+* Changed obstacle parameters `cutoff_factor` and `force_inclusion_factor` to `cutoff_dist` and `force_inclusion_dist`
+* Added check for obstacle pointer validity in StageInequalitySE2
+* Dynamic obstacles: the inequality constraints now use the actual time parameter rather than the time from the previous optimization
+* Added hybrid cost (time and control effort)
+* Added kinematic bicycle model with velocity input
+* Grid: The time difference is now initialized to dt_ref for reference trajectory caching
+* Fixed wrong start orientation in point-to-point grid initialization
+* Fixed wrong angular computation in midpoint differences
+* Added missing install files (thanks to marbosjo)
+* Changed minimum CMake version to 3.1
+* Contributors: Christoph Rösmann, marbosjo
+
 0.0.2 (2020-03-12)
 ------------------
 * Added option to inherit the robot footprint model from the costmap_2d footprint by setting footprint type to `costmap_2d` (thanks to Alexander Xydes).
