@@ -891,7 +891,7 @@ bool Controller::isPoseTrajectoryFeasible(base_local_planner::CostmapModel* cost
         // (if obstacles are pushing two consecutive poses away, the center between two consecutive poses might coincide with the obstacle ;-)!
         if (i < look_ahead_idx)
         {
-            double delta_rot           = normalize_theta(fd_grid->getState(i)[i + 1] - fd_grid->getState(i)[0]);
+            double delta_rot           = normalize_theta(fd_grid->getState(i + 1)[2] - fd_grid->getState(i)[2]);
             Eigen::Vector2d delta_dist = fd_grid->getState(i + 1).head(2) - fd_grid->getState(i).head(2);
             if (std::abs(delta_rot) > min_resolution_collision_check_angular || delta_dist.norm() > inscribed_radius)
             {
