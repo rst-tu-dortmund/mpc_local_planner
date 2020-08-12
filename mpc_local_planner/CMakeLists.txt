@@ -132,11 +132,11 @@ set(EXTERNAL_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 ##   * uncomment the "generate_dynamic_reconfigure_options" section below
 ##     and list every .cfg file to be processed
 
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+#add dynamic reconfigure api
+#find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/mpc_reconfigure.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -150,7 +150,7 @@ set(EXTERNAL_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 catkin_package(
   INCLUDE_DIRS include ${EXTERNAL_INCLUDE_DIRS}
   LIBRARIES mpc_local_planner_numerics mpc_local_planner_optimization
-  CATKIN_DEPENDS roscpp mpc_local_planner_msgs control_box_rst teb_local_planner
+  CATKIN_DEPENDS roscpp mpc_local_planner_msgs control_box_rst teb_local_planner dynamic_reconfigure
   # DEPENDS
 )
 
@@ -187,6 +187,11 @@ add_library(mpc_local_planner
    src/controller.cpp
    src/mpc_local_planner_ros.cpp
 )
+
+# Dynamic reconfigure: make sure configure headers are built before any node using them
+add_dependencies(mpc_local_planner ${PROJECT_NAME}_gencfg)
+# Generate messages before compiling the lib
+add_dependencies(mpc_local_planner ${PROJECT_NAME}_generate_messages_cpp)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
