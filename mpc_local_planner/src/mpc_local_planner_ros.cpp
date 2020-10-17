@@ -46,7 +46,7 @@ MpcLocalPlannerROS::MpcLocalPlannerROS()
       _tf(nullptr),
       _costmap_model(nullptr),
       _costmap_converter_loader("costmap_converter", "costmap_converter::BaseCostmapToPolygons"),
-      /*dynamic_recfg_(NULL),*/
+      dynamic_recfg_(NULL),
       _goal_reached(false),
       _no_infeasible_plans(0),
       /*last_preferred_rotdir_(RotType::none),*/
@@ -56,12 +56,22 @@ MpcLocalPlannerROS::MpcLocalPlannerROS()
 
 MpcLocalPlannerROS::~MpcLocalPlannerROS() {}
 
-/*
-void MpcLocalPlannerROS::reconfigureCB(TebLocalPlannerReconfigureConfig& config, uint32_t level)
+void MpcLocalPlannerROS::reconfigureCB(MpcLocalPlannerReconfigureConfig& config, uint32_t level)
 {
-  cfg_.reconfigure(config);
+    boost::mutex::scoped_lock l(config_mutex_);
+
+    _params.xy_goal_tolerance                      = config.xy_goal_tolerance;
+    _params.yaw_goal_tolerance                     = config.yaw_goal_tolerance;
+    _params.global_plan_overwrite_orientation      = config.global_plan_overwrite_orientation;
+    _params.global_plan_prune_distance             = config.global_plan_prune_distance;
+    _params.max_global_plan_lookahead_dist         = config.max_global_plan_lookahead_dist;
+    _params.is_footprint_dynamic                   = config.is_footprint_dynamic;
+    _params.include_costmap_obstacles              = config.include_costmap_obstacles;
+    _params.costmap_obstacles_behind_robot_dist    = config.costmap_obstacles_behind_robot_dist;
+    _params.global_plan_viapoint_sep               = config.global_plan_viapoint_sep;
+    _params.collision_check_min_resolution_angular = config.collision_check_min_resolution_angular;
+    _params.collision_check_no_poses               = config.collision_check_no_poses;
 }
-*/
 
 void MpcLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
 {
@@ -161,12 +171,10 @@ void MpcLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
         _odom_helper.setOdomTopic(_params.odom_topic);
 
         // setup dynamic reconfigure
-        /*
         dynamic_recfg_ = boost::make_shared<dynamic_reconfigure::Server<MpcLocalPlannerReconfigureConfig>>(nh);
         dynamic_reconfigure::Server<MpcLocalPlannerReconfigureConfig>::CallbackType cb =
-            boost::bind(&MpcLocalPlanner::reconfigureCB, this, _1, _2);
+            boost::bind(&MpcLocalPlannerROS::reconfigureCB, this, _1, _2);
         dynamic_recfg_->setCallback(cb);
-        */
 
         // validate optimization footprint and costmap footprint
         validateFootprints(_robot_model->getInscribedRadius(), _robot_inscribed_radius, _controller.getInequalityConstraint()->getMinimumDistance());
@@ -332,8 +340,7 @@ uint32_t MpcLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
     // updateControlFromTwist()
 
     // Do not allow config changes during the following optimization step
-    // TODO(roesmann): we need something similar in case we allow dynamic reconfiguration:
-    // boost::mutex::scoped_lock cfg_lock(cfg_.configMutex());
+    boost::mutex::scoped_lock cfg_lock(configMutex());
 
     // Now perform the actual planning
     // bool success = planner_->plan(transformed_plan, &robot_vel_, cfg_.goal_tolerance.free_goal_vel);

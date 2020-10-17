@@ -58,8 +58,8 @@
 #include <costmap_converter/costmap_converter_interface.h>
 
 // dynamic reconfigure
-// #include <dynamic_reconfigure/server.h>
-// #include <mpc_local_planner/MpcLocalPlannerReconfigureConfig.h>
+#include <dynamic_reconfigure/server.h>
+#include <mpc_local_planner/MpcLocalPlannerReconfigureConfig.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -221,6 +221,11 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      */
     static double getNumberFromXMLRPC(XmlRpc::XmlRpcValue& value, const std::string& full_param_name);
 
+    /**
+     * @brief Return the internal config mutex
+     */
+    boost::mutex& configMutex() { return config_mutex_; }
+
     //@}
 
  protected:
@@ -264,7 +269,7 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      * @param config Reference to the dynamic reconfigure config
      * @param level Dynamic reconfigure level
      */
-    // void reconfigureCB(MpcLocalPlannerReconfigureConfig& config, uint32_t level);
+    void reconfigureCB(MpcLocalPlannerReconfigureConfig& config, uint32_t level);
 
     /**
      * @brief Callback for custom obstacles that are not obtained from the costmap
@@ -373,8 +378,8 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
     pluginlib::ClassLoader<costmap_converter::BaseCostmapToPolygons> _costmap_converter_loader;  //!< Load costmap converter plugins at runtime
     boost::shared_ptr<costmap_converter::BaseCostmapToPolygons> _costmap_converter;              //!< Store the current costmap_converter
 
-    // std::shared_ptr<dynamic_reconfigure::Server<MpcLocalPlannerReconfigureConfig>>
-    //    dynamic_recfg_;                                        //!< Dynamic reconfigure server to allow config modifications at runtime
+    boost::shared_ptr<dynamic_reconfigure::Server<MpcLocalPlannerReconfigureConfig>>
+        dynamic_recfg_;                                        //!< Dynamic reconfigure server to allow config modifications at runtime
     ros::Subscriber _custom_obst_sub;                          //!< Subscriber for custom obstacles received via a ObstacleMsg.
     std::mutex _custom_obst_mutex;                             //!< Mutex that locks the obstacle array (multi-threaded)
     costmap_converter::ObstacleArrayMsg _custom_obstacle_msg;  //!< Copy of the most recent obstacle message
@@ -422,6 +427,8 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
         double controller_frequency                   = 10;
 
     } _params;
+
+    boost::mutex config_mutex_;  //!< Mutex for config accesses and changes
 
     struct CostmapConverterPlugin
     {
