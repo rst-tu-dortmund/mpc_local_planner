@@ -20,6 +20,7 @@
   <exec_depend>move_base</exec_depend>
   <exec_depend>map_server</exec_depend>
   <exec_depend>amcl</exec_depend>
+  <exec_depend>global_planner</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
