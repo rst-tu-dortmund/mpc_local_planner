@@ -190,8 +190,6 @@ add_library(mpc_local_planner
 
 # Dynamic reconfigure: make sure configure headers are built before any node using them
 add_dependencies(mpc_local_planner ${PROJECT_NAME}_gencfg)
-# Generate messages before compiling the lib
-add_dependencies(mpc_local_planner ${PROJECT_NAME}_generate_messages_cpp)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
