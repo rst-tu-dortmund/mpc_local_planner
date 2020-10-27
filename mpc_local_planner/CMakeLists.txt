@@ -149,7 +149,7 @@ generate_dynamic_reconfigure_options(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include ${EXTERNAL_INCLUDE_DIRS}
-  LIBRARIES mpc_local_planner_numerics mpc_local_planner_optimization
+  LIBRARIES mpc_local_planner_utils mpc_local_planner_optimal_control mpc_local_planner
   CATKIN_DEPENDS roscpp mpc_local_planner_msgs control_box_rst teb_local_planner dynamic_reconfigure
   # DEPENDS
 )
