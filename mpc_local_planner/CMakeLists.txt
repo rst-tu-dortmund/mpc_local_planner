@@ -135,7 +135,9 @@ set(EXTERNAL_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 #add dynamic reconfigure api
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
-  cfg/mpc_reconfigure.cfg
+  cfg/mpc_collision.cfg
+  cfg/mpc_controller.cfg
+  cfg/mpc_footprint.cfg
 )
 
 ###################################
