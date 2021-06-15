@@ -23,45 +23,39 @@
 #ifndef MPC_LOCAL_PLANNER_ROS_H_
 #define MPC_LOCAL_PLANNER_ROS_H_
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-// base local planner base class and utilities
-#include <base_local_planner/costmap_model.h>
-#include <base_local_planner/goal_functions.h>
-#include <base_local_planner/odometry_helper_ros.h>
-#include <mbf_costmap_core/costmap_controller.h>
-#include <nav_core/base_local_planner.h>
+#include <nav2_util/lifecycle_node.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+
+// Navigation2 local planner base class and utilities
+#include <nav2_core/controller.hpp>
 
 // mpc_local_planner related classes
 #include <mpc_local_planner/controller.h>
+#include <mpc_local_planner/mpc_config.h>
 #include <mpc_local_planner/utils/publisher.h>
 
 // teb_local_planner related classes
 #include <teb_local_planner/obstacles.h>
 #include <teb_local_planner/pose_se2.h>
 #include <teb_local_planner/robot_footprint_model.h>
+#include <teb_local_planner/costmap_converter_interface.h>
 
 // message types
-#include <costmap_converter/ObstacleMsg.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <nav_msgs/Odometry.h>
-#include <nav_msgs/Path.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <costmap_converter_msgs/msg/obstacle_array_msg.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <nav_msgs/msg/path.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 // transforms
 #include <tf2/utils.h>
 #include <tf2_ros/buffer.h>
 
 // costmap
-#include <costmap_2d/costmap_2d_ros.h>
-#include <costmap_converter/costmap_converter_interface.h>
-
-// dynamic reconfigure
-// #include <dynamic_reconfigure/server.h>
-// #include <mpc_local_planner/MpcLocalPlannerReconfigureConfig.h>
-
-#include <boost/shared_ptr.hpp>
+#include <nav2_costmap_2d/costmap_2d_ros.hpp>
 
 #include <memory>
 #include <mutex>
@@ -74,7 +68,7 @@ namespace mpc_local_planner {
  * interfaces, so the teb_local_planner plugin can be used both in move_base and move_base_flex (MBF).
  * @todo Escape behavior, more efficient obstacle handling
  */
-class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap_core::CostmapController
+class MpcLocalPlannerROS : public nav2_core::Controller
 {
     using PoseSE2                = teb_local_planner::PoseSE2;
     using RobotFootprintModelPtr = teb_local_planner::RobotFootprintModelPtr;
@@ -104,84 +98,37 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      * @param tf Pointer to a tf buffer
      * @param costmap_ros Cost map representing occupied and free space
      */
-    void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+    void configure(
+      const rclcpp_lifecycle::LifecycleNode::WeakPtr & node,
+      std::string name,
+      const std::shared_ptr<tf2_ros::Buffer> & tf,
+      const std::shared_ptr<nav2_costmap_2d::Costmap2DROS> & costmap_ros) override;
+
+    void activate() override;
+    void deactivate() override;
+    void cleanup() override;
+
+    void initialize(nav2_util::LifecycleNode::SharedPtr node, std::string& name);
 
     /**
      * @brief Set the plan that the teb local planner is following
      * @param orig_global_plan The plan to pass to the local planner
      * @return True if the plan was updated successfully, false otherwise
      */
-    bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
+    void setPlan(const nav_msgs::msg::Path & orig_global_plan) override;
 
     /**
      * @brief Given the current position, orientation, and velocity of the robot, compute velocity commands to send to the base
      * @param cmd_vel Will be filled with the velocity command to be passed to the robot base
      * @return True if a valid trajectory was found, false otherwise
      */
-    bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
-
-    /**
-     * @brief Given the current position, orientation, and velocity of the robot, compute velocity commands to send to the base.
-     * @remark Extended version for MBF API
-     * @param pose the current pose of the robot.
-     * @param velocity the current velocity of the robot.
-     * @param cmd_vel Will be filled with the velocity command to be passed to the robot base.
-     * @param message Optional more detailed outcome as a string
-     * @return Result code as described on ExePath action result:
-     *         SUCCESS         = 0
-     *         1..9 are reserved as plugin specific non-error results
-     *         FAILURE         = 100   Unspecified failure, only used for old, non-mfb_core based plugins
-     *         CANCELED        = 101
-     *         NO_VALID_CMD    = 102
-     *         PAT_EXCEEDED    = 103
-     *         COLLISION       = 104
-     *         OSCILLATION     = 105
-     *         ROBOT_STUCK     = 106
-     *         MISSED_GOAL     = 107
-     *         MISSED_PATH     = 108
-     *         BLOCKED_PATH    = 109
-     *         INVALID_PATH    = 110
-     *         TF_ERROR        = 111
-     *         NOT_INITIALIZED = 112
-     *         INVALID_PLUGIN  = 113
-     *         INTERNAL_ERROR  = 114
-     *         121..149 are reserved as plugin specific errors
-     */
-    uint32_t computeVelocityCommands(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& velocity,
-                                     geometry_msgs::TwistStamped& cmd_vel, std::string& message);
-
-    /**
-     * @brief  Check if the goal pose has been achieved
-     *
-     * The actual check is performed in computeVelocityCommands().
-     * Only the status flag is checked here.
-     * @return True if achieved, false otherwise
-     */
-    bool isGoalReached();
-
-    /**
-     * @brief Dummy version to satisfy MBF API
-     */
-    bool isGoalReached(double xy_tolerance, double yaw_tolerance) { return isGoalReached(); };
-
-    /**
-     * @brief Requests the planner to cancel, e.g. if it takes too much time
-     * @remark New on MBF API
-     * @return True if a cancel has been successfully requested, false if not implemented.
-     */
-    bool cancel() { return false; };
+    geometry_msgs::msg::TwistStamped computeVelocityCommands(
+      const geometry_msgs::msg::PoseStamped& pose,
+      const geometry_msgs::msg::Twist& velocity,
+      nav2_core::GoalChecker * /*goal_checker*/) override;
 
     /** @name Public utility functions/methods */
     //@{
-
-    /**
-     * @brief  Transform a tf::Pose type into a Eigen::Vector2d containing the translational and angular velocities.
-     *
-     * Translational velocities (x- and y-coordinates) are combined into a single translational velocity (first component).
-     * @param tf_vel tf::Pose message containing a 1D or 2D translational velocity (x,y) and an angular velocity (yaw-angle)
-     * @return Translational and angular velocity combined into an Eigen::Vector2d
-     */
-    static Eigen::Vector2d tfPoseToEigenVector2dTransRot(const tf::Pose& tf_vel);
 
     /**
      * @brief Get the current robot footprint/contour model
@@ -189,37 +136,14 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      * @param costmap_ros pointer to an intialized instance of costmap_2d::Costmap2dROS
      * @return Robot footprint model used for optimization
      */
-    static RobotFootprintModelPtr getRobotFootprintFromParamServer(const ros::NodeHandle& nh, costmap_2d::Costmap2DROS* costmap_ros = nullptr);
+    RobotFootprintModelPtr getRobotFootprintFromParamServer(const rclcpp_lifecycle::LifecycleNode::SharedPtr nh, std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros = nullptr);
 
     /**
      * @brief Get the current robot footprint/contour model
      * @param costmap_ros reference to an intialized instance of costmap_2d::Costmap2dROS
      * @return Robot footprint model used for optimization
      */
-    static RobotFootprintModelPtr getRobotFootprintFromCostmap2d(costmap_2d::Costmap2DROS& costmap_ros);
-
-    /**
-     * @brief Set the footprint from the given XmlRpcValue.
-     * @remarks This method is copied from costmap_2d/footprint.h, since it is not declared public in all ros distros
-     * @remarks It is modified in order to return a container of Eigen::Vector2d instead of geometry_msgs::Point
-     * @param footprint_xmlrpc should be an array of arrays, where the top-level array should have 3 or more elements, and the
-     * sub-arrays should all have exactly 2 elements (x and y coordinates).
-     * @param full_param_name this is the full name of the rosparam from which the footprint_xmlrpc value came.
-     * It is used only for reporting errors.
-     * @return container of vertices describing the polygon
-     */
-    static Point2dContainer makeFootprintFromXMLRPC(XmlRpc::XmlRpcValue& footprint_xmlrpc, const std::string& full_param_name);
-
-    /**
-     * @brief Get a number from the given XmlRpcValue.
-     * @remarks This method is copied from costmap_2d/footprint.h, since it is not declared public in all ros distros
-     * @remarks It is modified in order to return a container of Eigen::Vector2d instead of geometry_msgs::Point
-     * @param value double value type
-     * @param full_param_name this is the full name of the rosparam from which the footprint_xmlrpc value came.
-     * It is used only for reporting errors.
-     * @returns double value
-     */
-    static double getNumberFromXMLRPC(XmlRpc::XmlRpcValue& value, const std::string& full_param_name);
+    static RobotFootprintModelPtr getRobotFootprintFromCostmap2d(nav2_costmap_2d::Costmap2DROS& costmap_ros);
 
     //@}
 
@@ -255,28 +179,21 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      * @param transformed_plan (local) portion of the global plan (which is already transformed to the planning frame)
      * @param min_separation minimum separation between two consecutive via-points
      */
-    void updateViaPointsContainer(const std::vector<geometry_msgs::PoseStamped>& transformed_plan, double min_separation);
+    void updateViaPointsContainer(const std::vector<geometry_msgs::msg::PoseStamped>& transformed_plan, double min_separation);
 
-    /**
-     * @brief Callback for the dynamic_reconfigure node.
-     *
-     * This callback allows to modify parameters dynamically at runtime without restarting the node
-     * @param config Reference to the dynamic reconfigure config
-     * @param level Dynamic reconfigure level
-     */
-    // void reconfigureCB(MpcLocalPlannerReconfigureConfig& config, uint32_t level);
 
     /**
      * @brief Callback for custom obstacles that are not obtained from the costmap
      * @param obst_msg pointer to the message containing a list of polygon shaped obstacles
      */
-    void customObstacleCB(const costmap_converter::ObstacleArrayMsg::ConstPtr& obst_msg);
+    void customObstacleCB(const costmap_converter_msgs::msg::ObstacleArrayMsg::ConstSharedPtr obst_msg);
+
 
     /**
      * @brief Callback for custom via-points
      * @param via_points_msg pointer to the message containing a list of via-points
      */
-    void customViaPointsCB(const nav_msgs::Path::ConstPtr& via_points_msg);
+    void customViaPointsCB(const nav_msgs::msg::Path::ConstSharedPtr via_points_msg);
 
     /**
      * @brief Prune global plan such that already passed poses are cut off
@@ -293,8 +210,8 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      * @param dist_behind_robot Distance behind the robot that should be kept [meters]
      * @return \c true if the plan is pruned, \c false in case of a transform exception or if no pose cannot be found inside the threshold
      */
-    bool pruneGlobalPlan(const tf2_ros::Buffer& tf, const geometry_msgs::PoseStamped& global_pose,
-                         std::vector<geometry_msgs::PoseStamped>& global_plan, double dist_behind_robot = 1);
+    bool pruneGlobalPlan(const tf2_ros::Buffer& tf, const geometry_msgs::msg::PoseStamped& global_pose,
+                         std::vector<geometry_msgs::msg::PoseStamped>& _global_plan, double dist_behind_robot = 1);
 
     /**
      * @brief  Transforms the global plan of the robot from the planner frame to the local frame (modified).
@@ -314,10 +231,10 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      * @param[out] tf_plan_to_global Transformation between the global plan and the global planning frame
      * @return \c true if the global plan is transformed, \c false otherwise
      */
-    bool transformGlobalPlan(const tf2_ros::Buffer& tf, const std::vector<geometry_msgs::PoseStamped>& global_plan,
-                             const geometry_msgs::PoseStamped& global_pose, const costmap_2d::Costmap2D& costmap, const std::string& global_frame,
-                             double max_plan_length, std::vector<geometry_msgs::PoseStamped>& transformed_plan, int* current_goal_idx = NULL,
-                             geometry_msgs::TransformStamped* tf_plan_to_global = NULL) const;
+    bool transformGlobalPlan(const tf2_ros::Buffer& tf, const std::vector<geometry_msgs::msg::PoseStamped>& _global_plan,
+                             const geometry_msgs::msg::PoseStamped& global_pose, const nav2_costmap_2d::Costmap2D& costmap, const std::string& global_frame,
+                             double max_plan_length, std::vector<geometry_msgs::msg::PoseStamped>& transformed_plan, int* current_goal_idx = NULL,
+                             geometry_msgs::msg::TransformStamped* tf_plan_to_global = NULL) const;
 
     /**
      * @brief Estimate the orientation of a pose from the global_plan that is treated as a local goal for the local planner.
@@ -334,8 +251,8 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      * @param moving_average_length number of future poses of the global plan to be taken into account
      * @return orientation (yaw-angle) estimate
      */
-    double estimateLocalGoalOrientation(const std::vector<geometry_msgs::PoseStamped>& global_plan, const geometry_msgs::PoseStamped& local_goal,
-                                        int current_goal_idx, const geometry_msgs::TransformStamped& tf_plan_to_global,
+    double estimateLocalGoalOrientation(const std::vector<geometry_msgs::msg::PoseStamped>& _global_plan, const geometry_msgs::msg::PoseStamped& local_goal,
+                                        int current_goal_idx, const geometry_msgs::msg::TransformStamped& tf_plan_to_global,
                                         int moving_average_length = 3) const;
 
     /**
@@ -349,53 +266,57 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
      */
     void validateFootprints(double opt_inscribed_radius, double costmap_inscribed_radius, double min_obst_dist);
 
+    void setSpeedLimit(const double& speed_limit, const bool& percentage) override;
+
  private:
     // Definition of member variables
+    nav2_util::LifecycleNode::WeakPtr _nh;
+    std::string _name;
+
+    rclcpp::Logger _logger{rclcpp::get_logger("mpc_local_planner")};
+    rclcpp::Clock::SharedPtr _clock;
+
+    rclcpp::Node::SharedPtr _intra_proc_node;
 
     // external objects (store weak pointers)
-    costmap_2d::Costmap2DROS* _costmap_ros;  //!< Pointer to the costmap ros wrapper, received from the navigation stack
-    costmap_2d::Costmap2D* _costmap;         //!< Pointer to the 2d costmap (obtained from the costmap ros wrapper)
-    tf2_ros::Buffer* _tf;                    //!< pointer to tf buffer
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> _costmap_ros;  //!< Pointer to the costmap ros wrapper, received from the navigation stack
+    nav2_costmap_2d::Costmap2D* _costmap;         //!< Pointer to the 2d costmap (obtained from the costmap ros wrapper)
+    std::shared_ptr<tf2_ros::Buffer> _tf;                    //!< pointer to tf buffer
 
     // internal objects
-    Controller _controller;
+    MpcController _controller;
     ObstContainer _obstacles;  //!< Obstacle vector that should be considered during local trajectory optimization
     Publisher _publisher;
-    std::shared_ptr<base_local_planner::CostmapModel> _costmap_model;
+    std::shared_ptr<dwb_critics::ObstacleFootprintCritic> _costmap_model;
 
     corbo::TimeSeries::Ptr _x_seq = std::make_shared<corbo::TimeSeries>();
     corbo::TimeSeries::Ptr _u_seq = std::make_shared<corbo::TimeSeries>();
 
-    std::vector<geometry_msgs::PoseStamped> _global_plan;  //!< Store the current global plan
-
-    base_local_planner::OdometryHelperRos _odom_helper;  //!< Provides an interface to receive the current velocity from the robot
+    std::vector<geometry_msgs::msg::PoseStamped> _global_plan;  //!< Store the current global plan
 
     pluginlib::ClassLoader<costmap_converter::BaseCostmapToPolygons> _costmap_converter_loader;  //!< Load costmap converter plugins at runtime
-    boost::shared_ptr<costmap_converter::BaseCostmapToPolygons> _costmap_converter;              //!< Store the current costmap_converter
+    std::shared_ptr<costmap_converter::BaseCostmapToPolygons> _costmap_converter;              //!< Store the current costmap_converter
 
-    // std::shared_ptr<dynamic_reconfigure::Server<MpcLocalPlannerReconfigureConfig>>
-    //    dynamic_recfg_;                                        //!< Dynamic reconfigure server to allow config modifications at runtime
-    ros::Subscriber _custom_obst_sub;                          //!< Subscriber for custom obstacles received via a ObstacleMsg.
+    rclcpp::Subscription<costmap_converter_msgs::msg::ObstacleArrayMsg>::SharedPtr _custom_obst_sub;                          //!< Subscriber for custom obstacles received via a ObstacleMsg.
     std::mutex _custom_obst_mutex;                             //!< Mutex that locks the obstacle array (multi-threaded)
-    costmap_converter::ObstacleArrayMsg _custom_obstacle_msg;  //!< Copy of the most recent obstacle message
+    costmap_converter_msgs::msg::ObstacleArrayMsg _custom_obstacle_msg;  //!< Copy of the most recent obstacle message
 
     ViaPointContainer _via_points;
-    ros::Subscriber _via_points_sub;         //!< Subscriber for custom via-points received via a Path msg.
+    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr _via_points_sub;         //!< Subscriber for custom via-points received via a Path msg.
     bool _custom_via_points_active = false;  //!< Keep track whether valid via-points have been received from via_points_sub_
     std::mutex _via_point_mutex;             //!< Mutex that locks the via_points container (multi-threaded)
 
     PoseSE2 _robot_pose;                   //!< Store current robot pose
     PoseSE2 _robot_goal;                   //!< Store current robot goal
-    geometry_msgs::Twist _robot_vel;       //!< Store current robot translational and angular velocity (vx, vy, omega)
-    bool _goal_reached = false;            //!< store whether the goal is reached or not
-    ros::Time _time_last_infeasible_plan;  //!< Store at which time stamp the last infeasible plan was detected
+    geometry_msgs::msg::Twist _robot_vel;       //!< Store current robot translational and angular velocity (vx, vy, omega)
+    rclcpp::Time _time_last_infeasible_plan;  //!< Store at which time stamp the last infeasible plan was detected
     int _no_infeasible_plans = 0;          //!< Store how many times in a row the planner failed to find a feasible plan.
-    geometry_msgs::Twist _last_cmd;        //!< Store the last control command generated in computeVelocityCommands()
-    ros::Time _time_last_cmd;
+    geometry_msgs::msg::Twist _last_cmd;        //!< Store the last control command generated in computeVelocityCommands()
+    rclcpp::Time _time_last_cmd;
 
     RobotFootprintModelPtr _robot_model;
 
-    std::vector<geometry_msgs::Point> _footprint_spec;  //!< Store the footprint of the robot
+    std::vector<geometry_msgs::msg::Point> _footprint_spec;  //!< Store the footprint of the robot
     double _robot_inscribed_radius;                     //!< The radius of the inscribed circle of the robot (collision possible)
     double _robot_circumscribed_radius;                 //!< The radius of the circumscribed circle of the robot
 
@@ -405,31 +326,7 @@ class MpcLocalPlannerROS : public nav_core::BaseLocalPlanner, public mbf_costmap
     // flags
     bool _initialized;  //!< Keeps track about the correct initialization of this class
 
-    struct Parameters
-    {
-        double xy_goal_tolerance                      = 0.2;
-        double yaw_goal_tolerance                     = 0.1;
-        bool global_plan_overwrite_orientation        = true;
-        double global_plan_prune_distance             = 1.0;
-        double max_global_plan_lookahead_dist         = 1.5;
-        bool is_footprint_dynamic                     = false;
-        bool include_costmap_obstacles                = true;
-        double costmap_obstacles_behind_robot_dist    = 1.5;
-        double global_plan_viapoint_sep               = -1;
-        double collision_check_min_resolution_angular = M_PI;
-        int collision_check_no_poses                  = -1;
-        std::string odom_topic                        = "odom";
-        double controller_frequency                   = 10;
-
-    } _params;
-
-    struct CostmapConverterPlugin
-    {
-        std::string costmap_converter_plugin;
-        double costmap_converter_rate      = 5;
-        bool costmap_converter_spin_thread = true;
-
-    } _costmap_conv_params;
+    MpcConfig _params;
 
  public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

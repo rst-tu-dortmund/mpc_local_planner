@@ -29,10 +29,17 @@
 #include <teb_local_planner/obstacles.h>
 #include <teb_local_planner/robot_footprint_model.h>
 
-#include <geometry_msgs/PoseStamped.h>
-#include <ros/publisher.h>
-#include <ros/ros.h>
-#include <std_msgs/ColorRGBA.h>
+#include <mpc_local_planner_msgs/msg/optimal_control_result.hpp>
+
+#include <geometry_msgs/msg/point_stamped.h>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <nav_msgs/msg/path.hpp>
+#include <nav2_util/lifecycle_node.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+
+#include <std_msgs/msg/color_rgba.hpp>
 
 #include <memory>
 
@@ -65,7 +72,7 @@ class Publisher
      * @param[in] nh         local ros::NodeHandle
      * @param[in] map_frame  the planning frame name
      */
-    Publisher(ros::NodeHandle& nh, RobotDynamicsInterface::Ptr system, const std::string& map_frame);
+    Publisher(const rclcpp_lifecycle::LifecycleNode::SharedPtr nh, RobotDynamicsInterface::Ptr system, const std::string& map_frame);
 
     /**
      * @brief Initializes the class and registers topics.
@@ -74,13 +81,20 @@ class Publisher
      * @param[in] nh         local ros::NodeHandle
      * @param[in] map_frame  the planning frame name
      */
-    void initialize(ros::NodeHandle& nh, RobotDynamicsInterface::Ptr system, const std::string& map_frame);
+    void initialize(const rclcpp_lifecycle::LifecycleNode::SharedPtr nh, RobotDynamicsInterface::Ptr system, const std::string& map_frame);
+
+    nav2_util::CallbackReturn on_configure();
+    nav2_util::CallbackReturn on_activate();
+    nav2_util::CallbackReturn on_deactivate();
+    nav2_util::CallbackReturn on_cleanup();
+
+    void publishActuation(const geometry_msgs::msg::TwistStamped& cmd_vel) const;
 
     /**
      * @brief Publish a given local plan to the ros topic \e ../../local_plan
      * @param[in] local_plan Pose array describing the local plan
      */
-    void publishLocalPlan(const std::vector<geometry_msgs::PoseStamped>& local_plan) const;
+    void publishLocalPlan(const std::vector<geometry_msgs::msg::PoseStamped>& local_plan) const;
 
     /**
      * @brief Publish a given local plan to the ros topic \e ../../local_plan
@@ -92,7 +106,7 @@ class Publisher
      * @brief Publish a given global plan to the ros topic \e ../../global_plan
      * @param[in] global_plan Pose array describing the global plan
      */
-    void publishGlobalPlan(const std::vector<geometry_msgs::PoseStamped>& global_plan) const;
+    void publishGlobalPlan(const std::vector<geometry_msgs::msg::PoseStamped>& global_plan) const;
 
     /**
      * @brief Publish the visualization of the robot model
@@ -104,7 +118,7 @@ class Publisher
      * @param[in] color          Color of the footprint
      */
     void publishRobotFootprintModel(const teb_local_planner::PoseSE2& current_pose, const teb_local_planner::BaseRobotFootprintModel& robot_model,
-                                    const std::string& ns = "RobotFootprintModel", const std_msgs::ColorRGBA& color = toColorMsg(0.5, 0.0, 0.8, 0.0));
+                                    const std::string& ns = "RobotFootprintModel", const std_msgs::msg::ColorRGBA& color = toColorMsg(0.5, 0.0, 0.8, 0.0));
 
     /**
      * @brief Publish obstacle positions to the ros topic \e ../../mpc_markers
@@ -112,6 +126,8 @@ class Publisher
      * @param[in] obstacles Obstacle container
      */
     void publishObstacles(const teb_local_planner::ObstContainer& obstacles) const;
+
+    void publishOptimalControlResult(mpc_local_planner_msgs::msg::OptimalControlResult& msg);
 
     /**
      * @brief Publish via-points to the ros topic \e ../../teb_markers
@@ -131,18 +147,22 @@ class Publisher
      * @param[in] b Blue value
      * @return Color message
      */
-    static std_msgs::ColorRGBA toColorMsg(float a, float r, float g, float b);
+    static std_msgs::msg::ColorRGBA toColorMsg(float a, float r, float g, float b);
 
  private:
-    bool _initialized = false;
+    bool initialized_ = false;
 
-    std::string _map_frame = "map";
+    std::string map_frame_ = "map";
 
-    RobotDynamicsInterface::Ptr _system;
+    RobotDynamicsInterface::Ptr system_;
 
-    ros::Publisher _local_plan_pub;
-    ros::Publisher _global_plan_pub;
-    ros::Publisher _mpc_marker_pub;
+    rclcpp_lifecycle::LifecycleNode::SharedPtr nh_;
+    rclcpp::Logger logger_{rclcpp::get_logger("mpc_local_planner")};
+
+    rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>::SharedPtr local_plan_pub_;
+    rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>::SharedPtr global_plan_pub_;
+    rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::Marker>::SharedPtr mpc_marker_pub_;
+    rclcpp_lifecycle::LifecyclePublisher<mpc_local_planner_msgs::msg::OptimalControlResult>::SharedPtr _ocp_result_pub;
 };
 
 }  // namespace mpc_local_planner

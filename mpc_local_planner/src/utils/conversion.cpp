@@ -22,11 +22,20 @@
 
 #include <mpc_local_planner/utils/conversion.h>
 
-#include <tf/tf.h>
+#include <tf2/transform_datatypes.h>
 
 namespace mpc_local_planner {
 
-void convert(const corbo::TimeSeries& time_series, const RobotDynamicsInterface& dynamics, std::vector<geometry_msgs::PoseStamped>& poses_stamped,
+
+auto createQuaternionMsgFromYaw(double yaw)
+{
+  tf2::Quaternion q;
+  q.setRPY(0, 0, yaw);
+  return tf2::toMsg(q);
+}
+
+void convert(const rclcpp_lifecycle::LifecycleNode::SharedPtr nh, const corbo::TimeSeries& time_series,
+             const RobotDynamicsInterface& dynamics, std::vector<geometry_msgs::msg::PoseStamped>& poses_stamped,
              const std::string& frame_id)
 {
     poses_stamped.clear();
@@ -39,9 +48,9 @@ void convert(const corbo::TimeSeries& time_series, const RobotDynamicsInterface&
 
         double theta = 0;
         dynamics.getPoseSE2FromState(time_series.getValuesMap(i), poses_stamped.back().pose.position.x, poses_stamped.back().pose.position.y, theta);
-        poses_stamped.back().pose.orientation = tf::createQuaternionMsgFromYaw(theta);
+        poses_stamped.back().pose.orientation = createQuaternionMsgFromYaw(theta);
         poses_stamped.back().header.frame_id  = frame_id;
-        poses_stamped.back().header.stamp     = ros::Time::now();  // TODO(roesmann) should we use now()?
+        poses_stamped.back().header.stamp     = nh->now();
     }
 }
 

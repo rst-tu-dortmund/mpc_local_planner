@@ -93,7 +93,7 @@ void TestMpcOptimNode::start(ros::NodeHandle& nh)
     // Setup robot shape model
     teb_local_planner::RobotFootprintModelPtr robot_model = mpc_local_planner::MpcLocalPlannerROS::getRobotFootprintFromParamServer(nh);
 
-    mpc_local_planner::Controller controller;
+    mpc_local_planner::MpcController controller;
     if (!controller.configure(nh, _obstacles, robot_model, _via_points))
     {
         ROS_ERROR("Controller configuration failed.");

@@ -27,7 +27,8 @@
 #include <corbo-core/types.h>
 #include <mpc_local_planner/systems/robot_dynamics_interface.h>
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.h>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 #include <memory>
 #include <string>
@@ -48,8 +49,10 @@ namespace mpc_local_planner {
  * @param[out] poses_stamped    The resulting pose array (note, the incoming vector will be cleared)
  * @param[in] frame_id          The planning frame id that is added to the message header
  */
-void convert(const corbo::TimeSeries& time_series, const RobotDynamicsInterface& dynamics, std::vector<geometry_msgs::PoseStamped>& poses_stamped,
+void convert(const rclcpp_lifecycle::LifecycleNode::SharedPtr nh,const corbo::TimeSeries& time_series, const RobotDynamicsInterface& dynamics, std::vector<geometry_msgs::msg::PoseStamped>& poses_stamped,
              const std::string& frame_id);
+
+auto createQuaternionMsgFromYaw(double yaw);
 
 }  // namespace mpc_local_planner
 

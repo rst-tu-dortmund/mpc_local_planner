@@ -77,7 +77,7 @@ class KinematicBicycleModelVelocityInput : public BaseRobotSE2
     }
 
     // implements interface method
-    bool getTwistFromControl(const Eigen::Ref<const Eigen::VectorXd>& u, geometry_msgs::Twist& twist) const override
+    bool getTwistFromControl(const Eigen::Ref<const Eigen::VectorXd>& u, geometry_msgs::msg::Twist& twist) const override
     {
         assert(u.size() == getInputDimension());
         twist.linear.x = u[0];
