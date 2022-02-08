@@ -953,11 +953,12 @@ teb_local_planner::RobotFootprintModelPtr MpcLocalPlannerROS::getRobotFootprintF
                 << "/footprint_model/line_start' and/or '.../line_end' do not contain x and y coordinates (2D). Using point-model instead.");
             return boost::make_shared<teb_local_planner::PointRobotFootprint>();
         }
-
+        double min_obstacle_distance;
+        nh.getParam("collision_avoidance/min_obstacle_distance", min_obstacle_distance);
         ROS_INFO_STREAM("Footprint model 'line' (line_start: [" << line_start[0] << "," << line_start[1] << "]m, line_end: [" << line_end[0] << ","
                                                                 << line_end[1] << "]m) loaded for trajectory optimization.");
         return boost::make_shared<teb_local_planner::LineRobotFootprint>(Eigen::Map<const Eigen::Vector2d>(line_start.data()),
-                                                                         Eigen::Map<const Eigen::Vector2d>(line_end.data()));
+                                                                         Eigen::Map<const Eigen::Vector2d>(line_end.data()), min_obstacle_distance);
     }
 
     // two circles
