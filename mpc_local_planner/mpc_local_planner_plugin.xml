@@ -1,14 +1,8 @@
-<library path="lib/libmpc_local_planner">
-	<class name="mpc_local_planner/MpcLocalPlannerROS" type="mpc_local_planner::MpcLocalPlannerROS" base_class_type="nav_core::BaseLocalPlanner">
+<library path="mpc_local_planner">
+	<class type="mpc_local_planner::MpcLocalPlannerROS" base_class_type="nav2_core::Controller">
 		<description>
 			The mpc_local_planner package implements a plugin
 			to the base_local_planner of the 2D navigation stack.
 		</description>
 	</class>
-	<class name="mpc_local_planner/MpcLocalPlannerROS" type="mpc_local_planner::MpcLocalPlannerROS" base_class_type="mbf_costmap_core::CostmapController">
-		<description>
-			Same plugin implemented MBF CostmapController's extended interface.
-		</description>
-	</class>
 </library>
-

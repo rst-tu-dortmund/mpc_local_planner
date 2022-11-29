@@ -25,7 +25,7 @@
 
 #include <corbo-core/types.h>
 #include <corbo-systems/system_dynamics_interface.h>
-#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/msg/twist.hpp>
 #include <teb_local_planner/pose_se2.h>
 
 #include <memory>
@@ -122,7 +122,7 @@ class RobotDynamicsInterface : public corbo::SystemDynamicsInterface
      * @param[out] twist       Reference to the twist message
      * @return true, if conversion was successful, false otherwise
      */
-    virtual bool getTwistFromControl(const Eigen::Ref<const Eigen::VectorXd>& u, geometry_msgs::Twist& twist) const = 0;
+    virtual bool getTwistFromControl(const Eigen::Ref<const Eigen::VectorXd>& u, geometry_msgs::msg::Twist& twist) const = 0;
 
     /**
      * @brief Merge custom state feedback with pose and twist feedback
@@ -140,7 +140,7 @@ class RobotDynamicsInterface : public corbo::SystemDynamicsInterface
      * @param[in,out] x           Custom state feedback in which related will be overriden [getStateDimension() x 1]
      * @return true, if merging was successful, false otherwise
      */
-    virtual bool mergeStateFeedbackAndOdomFeedback(const teb_local_planner::PoseSE2& odom_pose, const geometry_msgs::Twist& odom_twist,
+    virtual bool mergeStateFeedbackAndOdomFeedback(const teb_local_planner::PoseSE2& odom_pose, const geometry_msgs::msg::Twist& odom_twist,
                                                    Eigen::Ref<Eigen::VectorXd> x) const = 0;
 
     virtual void reset() {}

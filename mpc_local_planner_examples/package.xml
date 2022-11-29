@@ -12,19 +12,16 @@
   <url type="website">http://wiki.ros.org/mpc_local_planner_examples</url>
 
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>stage_ros</exec_depend>
   <exec_depend>mpc_local_planner</exec_depend>
   <exec_depend>mpc_local_planner_msgs</exec_depend>
-  <exec_depend>move_base</exec_depend>
-  <exec_depend>map_server</exec_depend>
-  <exec_depend>amcl</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
+    <build_type>ament_cmake</build_type>
   </export>
 
 </package>

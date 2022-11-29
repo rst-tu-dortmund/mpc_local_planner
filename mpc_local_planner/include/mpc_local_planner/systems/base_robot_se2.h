@@ -90,7 +90,7 @@ class BaseRobotSE2 : public RobotDynamicsInterface
     }
 
     // implements interface method
-    virtual bool mergeStateFeedbackAndOdomFeedback(const teb_local_planner::PoseSE2& odom_pose, const geometry_msgs::Twist& odom_twist,
+    virtual bool mergeStateFeedbackAndOdomFeedback(const teb_local_planner::PoseSE2& odom_pose, const geometry_msgs::msg::Twist& odom_twist,
                                                    Eigen::Ref<Eigen::VectorXd> x) const override
     {
         assert(x.size() == getStateDimension());
